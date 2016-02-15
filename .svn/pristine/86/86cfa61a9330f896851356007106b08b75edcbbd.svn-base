@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <include layout="@layout/layout_top_bar" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <cn.fxdata.tv.view.HomeSlideShow 
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"/>
+                
+                <!-- <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:background="@drawable/hot_adv_image"
+                    android:scaleType="fitXY" /> -->
+            </RelativeLayout>
+
+			<include 
+			    layout="@layout/view_hotplay_common_hot_item"
+			    android:id="@+id/hotplay_variety"/>
+            
+			<include 
+			    layout="@layout/view_hotplay_common_hot_item"
+			    android:id="@+id/hotplay_drama"/>
+
+			<include 
+			    layout="@layout/view_hotplay_common_hot_item"
+			    android:id="@+id/hotplay_movie"/>
+            
+			<include 
+			    layout="@layout/view_hotplay_common_hot_item"
+			    android:id="@+id/hotplay_anime"/>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

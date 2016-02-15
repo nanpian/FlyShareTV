@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/act_records_title"
+        layout="@layout/common_title_bar" />
+
+    <ListView
+        android:id="@+id/record_lists"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/act_records_control"
+        android:layout_below="@id/act_records_title"
+        android:cacheColorHint="#00000000"
+        android:fadingEdge="none"
+        android:scrollbars="none"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_no_data"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/act_records_control"
+        android:layout_below="@id/act_records_title"
+        android:background="#ffffff"
+        android:gravity="center"
+        android:text="还没有播放记录哦"
+        android:textColor="#999999"
+        android:textSize="20dp" />
+
+    <LinearLayout
+        android:id="@+id/act_records_control"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/records_select"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/button"
+            android:enabled="true"
+            android:text="全选" />
+
+        <Button
+            android:id="@+id/records_remove"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/button"
+            android:enabled="true"
+            android:text="删除" />
+    </LinearLayout>
+
+</RelativeLayout>

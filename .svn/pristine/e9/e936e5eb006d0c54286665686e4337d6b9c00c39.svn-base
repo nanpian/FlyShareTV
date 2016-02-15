@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <include
+        android:id="@+id/video_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        layout="@layout/vedio_control_title_bar" />
+
+    <LinearLayout
+        android:id="@+id/volume_set_layout"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="150dp"
+        android:background="#cc000000"
+        android:orientation="horizontal"
+        android:visibility="visible" >
+
+        <SeekBar
+            android:id="@+id/volume_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_gravity="center_vertical"
+            android:max="100"
+            android:maxHeight="5dp"
+            android:minHeight="5dp"
+            android:progressDrawable="@drawable/seekbar_style"
+            android:thumb="@drawable/thumb_bar"
+            android:thumbOffset="0dip" >
+        </SeekBar>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/play_control_layout"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/video_title_bar" >
+
+        <include
+            android:id="@+id/content_set_layout"
+            android:layout_width="300dp"
+            android:layout_height="match_parent"
+            layout="@layout/content_selection_layout"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/resolution_set_layout"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            layout="@layout/resolution_set_layout" />
+    </FrameLayout>
+
+    <include
+        android:id="@+id/play_control_layout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        layout="@layout/media_control_nofull_view" />
+
+</RelativeLayout>

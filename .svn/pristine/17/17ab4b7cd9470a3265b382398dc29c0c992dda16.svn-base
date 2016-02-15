@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/search_top"
+        layout="@layout/layout_search_top_bar" />
+
+    <include
+        android:id="@+id/search_his_layout"
+        layout="@layout/search_history_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_top" />
+
+    <include
+        android:id="@+id/search_rst_layout"
+        layout="@layout/search_result_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_top" />
+</RelativeLayout>

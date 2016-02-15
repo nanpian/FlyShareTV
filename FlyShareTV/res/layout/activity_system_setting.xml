@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f8f6f7"
+    android:orientation="vertical" >
+
+    <include layout="@layout/common_title_bar" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        android:background="#e6dcdb" >
+
+        <cn.fxdata.tv.view.RoundedImageView
+            android:id="@+id/avatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/avatar_notlogin" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@+id/btn_avatar_setting"
+            android:layout_toRightOf="@+id/avatar"
+            android:gravity="center|left"
+            android:orientation="vertical"
+            android:padding="10dp" >
+
+            <TextView
+                android:id="@+id/tv_nick_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="昵称"
+                android:textColor="#adadad"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="编辑个人信息"
+                android:textColor="#ec6c6c"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/btn_avatar_setting"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:paddingEnd="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/arrow_double_right" />
+    </RelativeLayout>
+
+    <View style="@style/bottom_line1" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#e6dcdb" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:text="允许wifi网络环境下缓存"
+            android:textColor="#adadad" />
+
+        <Switch
+            android:id="@+id/switch1"
+            style="@style/switch_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp" />
+    </RelativeLayout>
+
+    <View style="@style/bottom_line1" />
+
+    <TextView
+        android:id="@+id/user_request"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#e6dcdb"
+        android:gravity="center_vertical"
+        android:padding="10dp"
+        android:text="用户反馈"
+        android:textColor="#adadad" />
+
+    <View style="@style/bottom_line1" />
+
+    <TextView
+        android:id="@+id/version_update"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#e6dcdb"
+        android:gravity="center_vertical"
+        android:padding="10dp"
+        android:text="软件更新"
+        android:textColor="#adadad" />
+
+    <View style="@style/bottom_line1" />
+
+    <TextView
+        android:id="@+id/about_fx"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#e6dcdb"
+        android:gravity="center_vertical"
+        android:padding="10dp"
+        android:text="关于飞享TV"
+        android:textColor="#adadad" />
+
+    <View style="@style/bottom_line1" />
+
+</LinearLayout>

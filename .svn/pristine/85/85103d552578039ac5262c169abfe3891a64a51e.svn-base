@@ -1,0 +1,91 @@
+package cn.fxdata.tv.activity;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.adapter.RecordsAdapter;
+import cn.fxdata.tv.base.BaseActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+/**
+ * 播放记录页面
+ */
+public class MoviePlayRecordsActivity extends BaseActivity implements OnClickListener {
+
+    private final static String TAG = "MoviePlayRecordsActivity";
+    private ImageView ivLeft;
+    private TextView tvTitle;
+    private ImageView ivRight;
+    // 底部的控制栏,平时不显示
+    private LinearLayout controlBar;
+    private ListView mListView;
+    private RecordsAdapter mRecordsAdapter;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_movie_record);
+        initView();
+        initAdapter();
+    }
+
+    private void initView() {
+        ivLeft = (ImageView) findViewById(R.id.iv_left);
+        ivLeft.setOnClickListener(this);
+        tvTitle = (TextView) findViewById(R.id.title);
+        tvTitle.setText("播放记录");
+        ivRight = (ImageView) findViewById(R.id.iv_right2);
+        ivRight.setImageResource(R.drawable.remove);
+        ivRight.setOnClickListener(this);
+        // 控制全选删除的显示，刚开始不显示，点击删除后显示
+        controlBar = (LinearLayout) findViewById(R.id.act_records_control);
+        controlBar.setVisibility(View.GONE);
+        mListView = (ListView) findViewById(R.id.record_lists);
+    }
+
+    private void initAdapter() {
+        mRecordsAdapter = new RecordsAdapter(MoviePlayRecordsActivity.this);
+        mListView.setAdapter(mRecordsAdapter);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View v) {
+        // TODO Auto-generated method stub
+        switch (v.getId()) {
+            case R.id.iv_left:
+                finish();
+                break;
+            case R.id.iv_right2:
+                // 点击删除的时候，显示底部控制栏
+                controlBar.setVisibility(View.VISIBLE);
+                break;
+            case R.id.records_select:
+                break;
+            case R.id.records_remove:
+                break;
+
+        }
+    }
+
+}

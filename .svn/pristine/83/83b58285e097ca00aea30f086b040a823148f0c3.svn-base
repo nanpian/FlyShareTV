@@ -1,0 +1,134 @@
+/**
+ * 
+ */
+package cn.fxdata.tv.bean;
+
+import java.io.Serializable;
+
+import com.google.gson.annotations.Expose;
+
+/** 
+ * TODO<登陆返回用户个人信息> 
+ */
+public class LoginInfoReturn implements Serializable{
+
+    @Expose
+    private Integer error_code;
+    @Expose
+    private String error_msg;
+    @Expose
+    private LoginInfo data;
+    
+    /**
+     * @return the error_code
+     */
+    public Integer getError_code() {
+        return error_code;
+    }
+
+    /**
+     * @param error_code the error_code to set
+     */
+    public void setError_code(Integer error_code) {
+        this.error_code = error_code;
+    }
+
+    /**
+     * @return the error_msg
+     */
+    public String getError_msg() {
+        return error_msg;
+    }
+
+    /**
+     * @param error_msg the error_msg to set
+     */
+    public void setError_msg(String error_msg) {
+        this.error_msg = error_msg;
+    }
+
+    /**
+     * @return the data
+     */
+    public LoginInfo getData() {
+        return data;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(LoginInfo data) {
+        this.data = data;
+    }
+
+    public static class LoginInfo implements Serializable{
+        
+        @Expose         
+        private String user_id;
+        @Expose
+        private String username;
+        @Expose
+        private String avatar;
+        @Expose
+        private String private_code;
+        
+        
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "LoginInfo [user_id=" + user_id + ", username=" + username + ", avatar=" + avatar + ", private_code=" + private_code + "]";
+        }
+        /**
+         * @return the user_id
+         */
+        public String getUser_id() {
+            return user_id;
+        }
+        /**
+         * @param user_id the user_id to set
+         */
+        public void setUser_id(String user_id) {
+            this.user_id = user_id;
+        }
+        /**
+         * @return the username
+         */
+        public String getUsername() {
+            return username;
+        }
+        /**
+         * @param username the username to set
+         */
+        public void setUsername(String username) {
+            this.username = username;
+        }
+        /**
+         * @return the avatar
+         */
+        public String getAvatar() {
+            return avatar;
+        }
+        /**
+         * @param avatar the avatar to set
+         */
+        public void setAvatar(String avatar) {
+            this.avatar = avatar;
+        }
+        /**
+         * @return the private_code
+         */
+        public String getPrivate_code() {
+            return private_code;
+        }
+        /**
+         * @param private_code the private_code to set
+         */
+        public void setPrivate_code(String private_code) {
+            this.private_code = private_code;
+        }
+        
+        
+    }
+}

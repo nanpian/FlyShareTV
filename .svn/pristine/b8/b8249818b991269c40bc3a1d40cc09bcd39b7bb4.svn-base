@@ -1,0 +1,373 @@
+package cn.fxdata.tv.service;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.bean.FlyShareTVdataHelper;
+import cn.fxdata.tv.bean.VideoItem;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Binder;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.util.Log;
+import android.widget.ProgressBar;
+import android.widget.RemoteViews;
+import android.widget.Toast;
+
+public class DownloadManagerService extends Service {
+	private DownloadBinder binder = new DownloadBinder();
+	private String mSavePath;
+	private String mRemotePath;
+	private static final int DOWNLOAD = 1;
+	/* 下载结束 */
+	private static final int DOWNLOAD_FINISH = 2;
+	private static final int DOWNLOAD_FAIL = 3;
+	private static final String ACTION_STOP_DOWNLOAD = "stop_downloa";
+	private static final String ACTION_START_DOWNLOAD = "start_downloa";
+	//private Context mContext;
+	private Notification mNotification;
+	private NotificationManager mNotificationManager;
+	private ProgressBar mProgress;
+	private int mDownLoadProgress;
+	private Timer mTimer;
+	private ArrayList<VideoItem> mDownItem = new ArrayList<VideoItem>();
+	private downloadVideoThread mDownThread;
+	private boolean isDownload = true;
+	private FlyShareTVdataHelper dbHelper;
+	
+	public void setRemotePath(String path){
+		
+		this.mRemotePath = path;
+		Log.d("renjun1","mRemotePath: "+mRemotePath);
+	}
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		Log.d("renjun1","downloader open22222gjghjgjgjgj");
+		mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE); 
+	    mTimer = new Timer();
+	    dbHelper = new FlyShareTVdataHelper(this,"FlyShareTV.db3", null, 1);
+	    IntentFilter filter = new IntentFilter();
+	       filter.addAction(ACTION_STOP_DOWNLOAD );
+	       filter.addAction(ACTION_START_DOWNLOAD);
+	       registerReceiver(onClickReceiver, filter);
+	}
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return binder;
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent,int flags,int startId){
+		Log.d("renjun1","onstart commard 11111");
+		//if(intent!= null){
+		   VideoItem item = (VideoItem) intent.getSerializableExtra("videoRes");
+		   addVideoToDownQuee(item);
+		//}
+		return Service.START_REDELIVER_INTENT;
+		
+	}
+	
+	//class InitThread extends Thread {
+		
+	//}
+	
+	public void addVideoToDownQuee(VideoItem item) {
+		mDownItem.add(item);
+		Log.d("renjun","add video start 11 ");
+		if(mDownThread==null || !mDownThread.isAlive()) {			
+			startDownload();	
+		}
+	}
+	private void startDownload() {
+		initNotification();
+		mDownThread = new downloadVideoThread();
+		mDownThread.start();
+	}
+	
+	private void continueDownload(){
+		isDownload = true;
+		mDownThread.start();
+	}
+	
+	public void stopDownload() {
+		isDownload = false;
+	}
+	
+	public class DownloadBinder extends Binder {
+		private void startDownload() {
+			initNotification();
+			mDownThread = new downloadVideoThread();
+			mDownThread.start();
+		}
+		
+		public void addVideoToDownQuee(VideoItem item) {
+			mDownItem.add(item);
+			Log.d("renjun","add video start 11 ");
+			if(mDownThread==null || !mDownThread.isAlive()) {			
+				startDownload();	
+			}
+		}
+		
+		
+	}
+	
+	@Override
+	public void onDestroy(){
+		Log.d("renjun1","service destroy nnnnnnnnnnnnnn");
+		mDownThread.stop();
+		super.onDestroy();
+		
+	}
+	
+	
+	//private void calculateTotallength() {
+		
+	//}
+	
+	private Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			// 正在下载
+			case DOWNLOAD:
+				Log.d("renjun1","toast 111 begin");
+				 mNotification.contentView.setProgressBar(R.id.download_progress, 100, mDownLoadProgress, false);
+				 mNotificationManager.notify(1, mNotification);
+				 startForeground(1,mNotification);
+				break;
+			case DOWNLOAD_FINISH:
+				// 安装文件
+				Log.d("renjun1","下载完成 22222222");
+				//Toast.makeText(mContext, "下载完成", Toast.LENGTH_LONG);
+				mTimer.cancel();
+				mNotificationManager.cancelAll();
+				stopForeground(true);
+				break;
+			//case DOWNLOAD_FAIL:
+			//	showLinkErrorDialog();
+			//	break;
+			default:
+				break;
+			}
+		};
+	};
+	private class downloadVideoThread extends Thread {
+		@Override
+		public void run() {
+				// 判断SD卡是否存在，并且是否具有读写权限
+				if (Environment.getExternalStorageState().equals(
+						Environment.MEDIA_MOUNTED)) {
+					// 获得存储卡的路径
+					String sdpath = Environment.getExternalStorageDirectory()
+							+ "/";
+					mSavePath = sdpath + "download";
+					int i = 0;
+					int length = 0;
+					int count = 0;
+					try {  
+			            if(mTimer!=null){  
+			                mTimer.cancel();// 退出之前的mTimer  
+			            }  
+			            mTimer = new Timer();// new一个Timer,否则会报错  
+			            timerTask(); 
+			        } catch (IllegalStateException e) {  
+			            e.printStackTrace();  
+			        }  
+				// 写入到文件中
+					Log.d("renjun1","mDownItem.size():"+mDownItem.size());
+					while (i < mDownItem.size()){
+						VideoItem  vitem = mDownItem.get(i);
+						final String iRemotePath = vitem.getVideoUri();						
+						RandomAccessFile fos =null;
+						InputStream is=null;
+						// 创建连接
+						try {
+							URL url = new URL(iRemotePath);
+						    HttpURLConnection conn = (HttpURLConnection) url
+								   .openConnection();						    
+						    conn.setConnectTimeout(5000);
+						    conn.setRequestMethod("GET");
+						    int start = getFinished(iRemotePath);
+						    
+					        Log.d("renjun1","length: "+length);
+					        conn.setRequestProperty("Range","bytes="+start);
+					        length = length+conn.getContentLength();
+					        //conn.connect();
+						    
+						    Log.d("renjun1","conn.getResponseCode():"+conn.getResponseCode());
+						    if (conn.getResponseCode() == 404 ) {
+							    continue;
+						    } else {
+						    // 获取文件大					        
+						    
+						        is = conn.getInputStream();
+
+							   File file = new File(mSavePath);
+							   // 判断文件目录是否存在
+							   if (!file.exists()) {
+								   file.mkdir();
+							   }
+							   File videoFile = new File(mSavePath,i+"aa.mp4");
+							   fos = new RandomAccessFile(videoFile,"rwd");
+							   fos.seek(start);
+							   // 缓存
+							   byte buf[] = new byte[1024*4];
+							   int numread = -1;
+							   
+							   while((numread = is.read(buf) )!= -1) {
+								  if(!isDownload) {
+									  stopAndSaveSql(iRemotePath,count);
+									  return;
+								  }
+								   fos.write(buf, 0, numread);
+								   count += numread;
+								   mDownLoadProgress = (int) (((float) count / length) * 100);
+								   Log.d("renjun1","mDownLoadProgress: "+mDownLoadProgress);
+							   }
+							   Log.d("renjun1","1 hinish 4444");
+						    }
+					    } catch (MalformedURLException e) {
+							Log.d("renjun1","xcvvxvxvxvxv");
+							e.printStackTrace();
+						} catch (IOException e) {
+							Log.d("renjun1","999999999999999999999");
+							e.printStackTrace();
+						}finally {
+							if (fos!= null) {
+								try{
+							       fos.close();
+								} catch (IOException e) {
+									fos = null;
+								}
+							}
+							if (is!= null) {
+								try{
+							       is.close();
+								} catch (IOException e) {
+									is = null;
+								}
+							}
+						}
+						Log.d("renjun1","5686786868");
+					}
+					mHandler.sendEmptyMessage(DOWNLOAD_FINISH);
+					Log.d("renjun1","hgjgjgjgj");
+				}
+			
+			// 取消下载对话框显示
+			//mDownloadDialog.dismiss();
+			Log.d("renjun1","00000000000000000");
+		}
+	};
+	
+	 private void initNotification() { 
+	        int icon = R.drawable.vedio_download_bg; 
+	        CharSequence tickerText = ""; 
+	        long when = System.currentTimeMillis(); 
+	        mNotification = new Notification(icon, tickerText, when); 
+	 
+	        // 放置在"正在运行"栏目中 
+	        mNotification.flags = Notification.FLAG_ONGOING_EVENT; 
+	 
+	        RemoteViews contentView = new RemoteViews(getPackageName(), 
+	                R.layout.download_notify);
+	        
+	        
+	        contentView.setTextViewText(R.id.download_file, "下载文件"); 
+	        contentView.setProgressBar(R.id.download_progress, 100, 0, false);	        
+	        Intent buttonIntent = new Intent(ACTION_STOP_DOWNLOAD);
+	        PendingIntent pendButtonIntent = PendingIntent.getBroadcast(this, 0, buttonIntent, 0);
+	        contentView.setOnClickPendingIntent(R.id.download_stop, pendButtonIntent);
+	                 //R.id.trackname为你要监听按钮的id
+	        // 指定个性化视图 
+	        mNotification.contentView = contentView; 
+	    } 
+	 
+	 public int getFinished(String iRemotePath) {
+		// TODO Auto-generated method stub
+		 Cursor mCursor = null;
+		 SQLiteDatabase db = null;
+		 int mFinished = 0;
+		 try {
+			 db = dbHelper.getWritableDatabase();
+	    		mCursor = db.query("play_history", new String[] {"_id,_uri,down_fin"},
+	        			"_uri=?",new String[]{iRemotePath}, null,null,null);
+	    		if(mCursor.moveToFirst()) {
+	    			int com = mCursor.getColumnIndex("down_fin");
+		    		Log.d("renjun1","com: "+com);
+		    		if(com >= 0){
+		    		    mFinished = mCursor.getInt(com);
+		    		}
+	    		}	    		
+		 }finally {
+			 if(mCursor!=null) {
+				 mCursor.close();
+			 }
+		 }
+		return mFinished;
+	}
+
+	public void stopAndSaveSql(String uri, int finished) {
+		// TODO Auto-generated method stub
+		 ContentValues values = new ContentValues();
+		 values.put("down_fin", finished);
+		 dbHelper.update(values,uri);		 
+	}
+
+
+	BroadcastReceiver onClickReceiver = new BroadcastReceiver() {
+		 
+         @Override
+         public void onReceive(Context context, Intent intent) {
+             if (intent.getAction().equals(ACTION_STOP_DOWNLOAD)) {
+            	 Log.d("renjun1","isDownload: "+isDownload);
+            	 if(isDownload) {
+            	     stopDownload();
+            	     mNotification.contentView.setImageViewResource(R.id.download_stop, R.drawable.ic_media_play);
+    				 mNotificationManager.notify(1, mNotification);
+            	 } else {
+            		 startDownload();
+            		 mNotification.contentView.setImageViewResource(R.id.download_stop, R.drawable.ic_media_pause);
+    				 mNotificationManager.notify(1, mNotification);
+            	 }
+             } 
+                                 //在这里处理点击事件
+         }
+     };
+
+	public void timerTask() {  
+	        //创建定时线程执行更新任务  
+	        mTimer.schedule(new TimerTask() {  
+	            @Override  
+	            public void run() {  
+	                mHandler.sendEmptyMessage(DOWNLOAD);// 向Handler发送消息  
+	            }  
+	        }, 3000, 3000);// 定时任务  
+    };
+    
+}

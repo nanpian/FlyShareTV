@@ -1,0 +1,39 @@
+package cn.fxdata.tv.utils;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
+
+public class ImageUtill {
+    public Bitmap compressImage(String path, int viewx, int viewy) {
+        // TODO Auto-generated method stub
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;
+        Bitmap bm = BitmapFactory.decodeFile(path, opt);
+        opt.inSampleSize = getSampleSize(opt, viewx, viewy);
+        opt.inJustDecodeBounds = false;
+        opt.inPurgeable = true;
+        opt.inInputShareable = true;
+        opt.inDither = false;
+        opt.inTempStorage = new byte[16 * 1024];
+        return BitmapFactory.decodeFile(path, opt);
+
+    }
+
+    private int getSampleSize(Options opt, int viewx, int viewy) {
+        // TODO Auto-generated method stub
+        int picWidth = opt.outWidth;
+        int picHeight = opt.outHeight;
+        opt.inSampleSize = 1;
+        if (picWidth > picHeight) {
+            if (picWidth > viewx) {
+                opt.inSampleSize = picWidth / viewx;
+            }
+        } else {
+            if (picHeight > viewy) {
+                opt.inSampleSize = picHeight / viewy;
+            }
+        }
+        return opt.inSampleSize;
+    }
+}

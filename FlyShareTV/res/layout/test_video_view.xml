@@ -1,0 +1,51 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+            <RelativeLayout
+            android:id="@+id/video_play_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <com.lowlevel.videoviewcompat.VideoView
+                android:id="@+id/video_surfaceview"
+                android:layout_width="match_parent"
+                android:layout_height="140dp" >
+            </com.lowlevel.videoviewcompat.VideoView>
+            </RelativeLayout>
+
+</LinearLayout> -->
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:orientation="vertical">
+
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <FrameLayout
+                android:id="@+id/video_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true">
+
+            <com.lowlevel.videoviewcompat.VideoView
+                    android:id="@+id/video_surfaceview"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"/>
+            <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/videoplayerPreloader"
+                    android:layout_gravity="center"/>
+
+        </FrameLayout>
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,307 @@
+package cn.fxdata.tv.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.fxdata.tv.activity.ForcastVideoDetailActivity;
+import cn.fxdata.tv.activity.ForplayVideoViewActivity;
+import cn.fxdata.tv.adapter.ImageWallAdapter;
+import cn.fxdata.tv.adapter.MoviesNowAdapter_old;
+import cn.fxdata.tv.adapter.MoviesNowAdapter;
+import cn.fxdata.tv.adapter.MoviesPrevAdapter;
+import cn.fxdata.tv.base.BaseTitleBarFragment;
+import cn.fxdata.tv.bean.NewMoviesReturn;
+import cn.fxdata.tv.bean.NewMoviesReturn.Movies;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.http.VolleyRequestManager;
+import cn.fxdata.tv.utils.CountDownUtil;
+import cn.fxdata.tv.utils.DPIUtil;
+import cn.fxdata.tv.utils.DateTimeUtil;
+import cn.fxdata.tv.utils.Log;
+import cn.fxdata.tv.utils.MJsonUtil;
+import cn.fxdata.tv.utils.MyCountdownTimer;
+import cn.fxdata.tv.view.DateDrawable;
+import cn.fxdata.tv.view.widget.*;
+
+import com.android.volley.Listener;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyTools;
+import com.android.volley.Request.Method;
+import com.android.volley.image.ImageLoader;
+import com.android.volley.request.StringRequest;
+import com.android.volley.toolbox.BaseImageLoader.ImageListener;
+import com.etsy.android.grid.StaggeredGridView;
+import com.google.gson.reflect.TypeToken;
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshStaggeredView;
+import com.zgntech.core.view.HorizontalListView;
+
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceActivity.Header;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
+import cn.fxdata.tv.R;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-30
+ * @version：V1.0
+ */
+public class LatestVedioFragment extends BaseTitleBarFragment {
+    private static final String TAG = "LatestVideoFragment";
+    
+    public VolleyTools volleyTools;
+    
+    //今日更新列表
+    private List<Movies> list_now = new ArrayList<Movies>();
+    private MoviesNowAdapter moviesNowAdapter;
+    //预告列表
+    private List<Movies> list_pre = new ArrayList<Movies>();
+    private MoviesPrevAdapter moviewPrevAdapter;
+        
+    private PullToRefreshStaggeredView vedioPullToRefreshListView;
+    private View listHeader;
+    private CountdownClock mCdClock;
+    private HorizontalListView horizontalListView;
+    
+    private StaggeredGridView staggeredGridView;
+    
+    private ImageView connectError;
+    
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        
+        setTitleText(getActivity().getString(R.string.latest_video_title));
+        setRightImageView(R.drawable.icon_person_avatar);
+        setRight2ImageView(R.drawable.icon_history_clock);
+        setContentLayout(R.layout.frag_main_latest_vedio);
+        
+        vedioPullToRefreshListView = (PullToRefreshStaggeredView) layoutContent.findViewById(R.id.video_listview);
+        connectError = (ImageView) layoutContent.findViewById(R.id.connect_error);
+        connectError.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "connect error click");
+                vedioPullToRefreshListView.setVisibility(View.VISIBLE);
+                connectError.setVisibility(View.GONE);
+                vedioPullToRefreshListView.setRefreshing();
+            }
+        });
+        
+        listHeader = inflater.inflate(R.layout.view_listview_header, null);
+
+        mCdClock = (CountdownClock) listHeader.findViewById(R.id.count_down_clock);
+        mCdClock.setVisibility(View.GONE);
+        horizontalListView = (com.zgntech.core.view.HorizontalListView) listHeader.findViewById(R.id.list_pre_view);
+        moviewPrevAdapter = new MoviesPrevAdapter(getActivity(), list_pre);
+        horizontalListView.setAdapter(moviewPrevAdapter);
+        
+        moviesNowAdapter = new MoviesNowAdapter(getActivity(), list_now);
+        staggeredGridView = (StaggeredGridView) (vedioPullToRefreshListView).getRefreshableView();
+        staggeredGridView.addHeaderView(listHeader);
+        staggeredGridView.setAdapter(moviesNowAdapter);
+        
+        vedioPullToRefreshListView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int header = staggeredGridView.getHeaderViewsCount();
+                Log.d("TAG", "forplay click position: " + position + ", header count: " + header);
+                if (position - header <= 0)
+                    return;
+                Intent intent = new Intent(getActivity(), ForplayVideoViewActivity.class);
+                intent.putExtra(Constants.MovieExtra.EXTRA_MOVIE_ID, list_now.get(position - header).getMovie_id());
+                getActivity().startActivity(intent);
+            }
+        });
+
+        vedioPullToRefreshListView.setOnRefreshListener(new OnRefreshListener<StaggeredGridView>() {
+            @Override
+            public void onRefresh(PullToRefreshBase<StaggeredGridView> refreshView) {
+                lazyLoad();
+            }
+
+        });
+
+        horizontalListView.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
+            	Log.d(TAG,"Header onItemClick, position = " + position);
+            	if(position < 0) return;
+            	
+                if (list_pre != null && list_pre.size() > 0) {
+                    Movies movies = list_pre.get(position);
+                    if (movies != null) {
+                        Intent intent = new Intent(getActivity(), ForcastVideoDetailActivity.class);
+                        intent.putExtra(Constants.MovieExtra.EXTRA_MOVIE_ID, list_pre.get(position).getMovie_id());
+                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        getActivity().startActivity(intent);
+                    }
+                }
+            }
+        });
+     
+        return view;
+    }
+   
+    @Override
+    public void onResume(){
+    	super.onResume();
+    	
+        if (getUserVisibleHint()) {
+        	// Fragment onResume
+        	Log.d(TAG,"Fragment onResume");
+        	new Handler(getActivity().getMainLooper()).postDelayed(new Runnable(){
+				@Override
+				public void run() {
+					vedioPullToRefreshListView.setRefreshing();					
+				}
+        	}, 1000);
+        	           
+        } else {
+        	Log.d(TAG,"Fragment user visible hint: false");
+        	// Fragment onPause 
+        }
+        
+    }
+    
+    @Override
+    public void onDestroyView(){
+    	super.onDestroyView();
+    	Log.d(TAG,"lastest vedio fragment destroy view");
+    }
+    
+
+    protected boolean isVisible;
+
+    /**
+     * 在这里实现Fragment数据的缓加载.
+     * 
+     * @param isVisibleToUser
+     */
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (getUserVisibleHint()) {
+        	// Fragment onResume
+        	Log.d(TAG,"Fragment user visible hint: ture");
+            isVisible = true;
+        } else {
+        	Log.d(TAG,"Fragment user visible hint: false");
+        	// Fragment onPause
+            isVisible = false;
+            onInvisible();
+        }
+    }
+ 
+    @Override
+    protected void lazyLoad() {
+        // TODO Auto-generated method stub
+        Log.d(TAG, "the lazyload start");
+        /*
+         * if(!isPrepared || !isVisible) { return; }
+         */
+        Log.d(TAG, "the volley start");
+        vedioPullToRefreshListView.setVisibility(View.VISIBLE);
+        connectError.setVisibility(View.GONE);
+
+        volleyTools = VolleyTools.getInstance(this.getContext());
+        volleyTools.addToRequestQueue(new StringRequest(Method.GET, Constants.ServerConfig.HOME_URL2, getMoviesListener), volleyTools.VolleyTAG);
+    }
+
+    private Listener<String> getMoviesListener = new Listener<String>() {
+        private Object mQueue;
+        private ImageLoader mImageLoader;
+
+        @Override
+        public void onSuccess(String response) {
+            Log.d(TAG, "the response --> " + response);
+            vedioPullToRefreshListView.onRefreshComplete();
+            NewMoviesReturn moviesReturn = MJsonUtil.gson.fromJson(response, new TypeToken<NewMoviesReturn>() {
+            }.getType());
+            if (moviesReturn.getError_code() == 0) {
+                moviesReturn.getError_msg();
+                list_now = moviesReturn.getData().getList_now();
+                list_pre = moviesReturn.getData().getList_pre();
+                if (list_now != null && list_now.size() > 0) {
+                    Log.d(TAG, "The list now size --> " + list_now.size());
+                    list_now.add(0, Movies.getMovieTime(R.drawable.video_image_01));
+                    moviesNowAdapter.context = LatestVedioFragment.this.getActivity();
+                    moviesNowAdapter.moviesList = list_now;
+                    moviesNowAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(TAG, "The list now is null");
+                }
+
+                if (list_pre == null || (list_pre != null && list_pre.size() == 0)) {
+                    listHeader.setVisibility(View.GONE);
+                    staggeredGridView.removeHeaderView(listHeader);
+                } else {
+                    staggeredGridView.removeHeaderView(listHeader);
+                    staggeredGridView.addHeaderView(listHeader);
+                }
+
+                String preview_end = moviesReturn.getData().getPreview_end();
+                Log.d(TAG, "countDownTime: " + preview_end);
+                if (preview_end != null) {
+                    long currTime = System.currentTimeMillis();
+                    long prevTime = DateTimeUtil.StringToUnixTime(preview_end);
+                    Log.d(TAG, "prevTime: " + prevTime + " curr:" + currTime);
+                    if (prevTime - currTime > 1000 * 60)
+                        mCdClock.Start(null, prevTime - currTime);
+                    else {
+                        Log.e(TAG, "prevTime < currTime");
+                        mCdClock.Start(null, 0);
+                    }
+                    mCdClock.setVisibility(View.VISIBLE);
+                }
+
+                if (list_pre != null && list_pre.size() > 0) {
+                    Log.d(TAG, "The listpre pre size is -->> " + list_pre.size());
+                    moviewPrevAdapter.context = LatestVedioFragment.this.getActivity();
+                    moviewPrevAdapter.moviesList = list_pre;
+                    moviewPrevAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(TAG, "The list pre is null");
+                }
+                
+                if(list_now == null && list_pre == null){
+                	//show network error
+                	vedioPullToRefreshListView.setVisibility(View.GONE);
+                    connectError.setVisibility(View.VISIBLE);
+                }
+            } else {
+                Log.d(TAG, "movies return error");
+            }
+        }
+
+        @Override
+        public void onError(VolleyError error) {
+            vedioPullToRefreshListView.onRefreshComplete();
+            super.onError(error);
+            Log.d(TAG, "the response --> " + error.toString());
+            vedioPullToRefreshListView.setVisibility(View.GONE);
+            connectError.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onCancel() {
+            vedioPullToRefreshListView.onRefreshComplete();
+            super.onCancel();
+            Log.d(TAG, "cancelled");
+        }
+    };
+}

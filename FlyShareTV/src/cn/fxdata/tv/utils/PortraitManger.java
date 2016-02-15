@@ -1,0 +1,29 @@
+package cn.fxdata.tv.utils;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+
+public class PortraitManger {
+    private Context mContext;
+    SharedPreferences sharedPreferences;
+    Editor editor;
+
+    public PortraitManger(Context context) {
+        mContext = context;
+        sharedPreferences = mContext.getSharedPreferences(
+                "OwnerMsgEditActivity", Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+    }
+
+    public void setProtraitPhoto(String path) {
+        editor.putString("photoimagepath", path);
+        editor.commit();
+    }
+
+    public String getProtraitPhoto() {
+        String path = sharedPreferences.getString("photoimagepath", "");
+        return path;
+    }
+
+}

@@ -1,0 +1,245 @@
+
+package cn.fxdata.tv.bean.movie;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+public class Data {
+
+    @SerializedName("movie_id")
+    @Expose
+    private String movieId;
+    @SerializedName("movie_name")
+    @Expose
+    private String movieName;
+    @SerializedName("director")
+    @Expose
+    private String director;
+    @SerializedName("actor")
+    @Expose
+    private String actor;
+    @SerializedName("type")
+    @Expose
+    private String type;
+    @SerializedName("area")
+    @Expose
+    private String area;
+    @SerializedName("remark")
+    @Expose
+    private Object remark;
+    @SerializedName("detail")
+    @Expose
+    private Object detail;
+    @SerializedName("release_time")
+    @Expose
+    private String releaseTime;
+    @SerializedName("film_url")
+    @Expose
+    private String filmUrl;
+
+    /**
+     * 
+     * @return
+     *     The movieId
+     */
+    public String getMovieId() {
+        return movieId;
+    }
+
+    /**
+     * 
+     * @param movieId
+     *     The movie_id
+     */
+    public void setMovieId(String movieId) {
+        this.movieId = movieId;
+    }
+
+    /**
+     * 
+     * @return
+     *     The movieName
+     */
+    public String getMovieName() {
+        return movieName;
+    }
+
+    /**
+     * 
+     * @param movieName
+     *     The movie_name
+     */
+    public void setMovieName(String movieName) {
+        this.movieName = movieName;
+    }
+
+    /**
+     * 
+     * @return
+     *     The director
+     */
+    public String getDirector() {
+        return director;
+    }
+
+    /**
+     * 
+     * @param director
+     *     The director
+     */
+    public void setDirector(String director) {
+        this.director = director;
+    }
+
+    /**
+     * 
+     * @return
+     *     The actor
+     */
+    public String getActor() {
+        return actor;
+    }
+
+    /**
+     * 
+     * @param actor
+     *     The actor
+     */
+    public void setActor(String actor) {
+        this.actor = actor;
+    }
+
+    /**
+     * 
+     * @return
+     *     The type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * 
+     * @param type
+     *     The type
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * 
+     * @return
+     *     The area
+     */
+    public String getArea() {
+        return area;
+    }
+
+    /**
+     * 
+     * @param area
+     *     The area
+     */
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    /**
+     * 
+     * @return
+     *     The remark
+     */
+    public Object getRemark() {
+        return remark;
+    }
+
+    /**
+     * 
+     * @param remark
+     *     The remark
+     */
+    public void setRemark(Object remark) {
+        this.remark = remark;
+    }
+
+    /**
+     * 
+     * @return
+     *     The detail
+     */
+    public Object getDetail() {
+        return detail;
+    }
+
+    /**
+     * 
+     * @param detail
+     *     The detail
+     */
+    public void setDetail(Object detail) {
+        this.detail = detail;
+    }
+
+    /**
+     * 
+     * @return
+     *     The releaseTime
+     */
+    public String getReleaseTime() {
+        return releaseTime;
+    }
+
+    /**
+     * 
+     * @param releaseTime
+     *     The release_time
+     */
+    public void setReleaseTime(String releaseTime) {
+        this.releaseTime = releaseTime;
+    }
+
+    /**
+     * 
+     * @return
+     *     The filmUrl
+     */
+    public String getFilmUrl() {
+        return filmUrl;
+    }
+
+    /**
+     * 
+     * @param filmUrl
+     *     The film_url
+     */
+    public void setFilmUrl(String filmUrl) {
+        this.filmUrl = filmUrl;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(movieId).append(movieName).append(director).append(actor).append(type).append(area).append(remark).append(detail).append(releaseTime).append(filmUrl).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if ((other instanceof Data) == false) {
+            return false;
+        }
+        Data rhs = ((Data) other);
+        return new EqualsBuilder().append(movieId, rhs.movieId).append(movieName, rhs.movieName).append(director, rhs.director).append(actor, rhs.actor).append(type, rhs.type).append(area, rhs.area).append(remark, rhs.remark).append(detail, rhs.detail).append(releaseTime, rhs.releaseTime).append(filmUrl, rhs.filmUrl).isEquals();
+    }
+
+}

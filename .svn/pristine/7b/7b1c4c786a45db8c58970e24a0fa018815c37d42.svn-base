@@ -1,0 +1,246 @@
+package cn.fxdata.tv.adapter;
+
+import java.io.File;
+import java.util.ArrayList;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.cache.DiskCache;
+import com.android.volley.image.ImageLoader;
+import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.BaseImageLoader.ImageListener;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.activity.SearchResultActivity;
+import cn.fxdata.tv.adapter.HotCommentAdapter.ViewHolder;
+import cn.fxdata.tv.bean.VideoItem;
+import cn.fxdata.tv.db.FavDbUtil;
+import cn.fxdata.tv.db.FlyShareTVdataHelper;
+import cn.fxdata.tv.db.SearchUtils;
+import cn.fxdata.tv.utils.StringUtils;
+import cn.fxdata.tv.utils.ToastUtils;
+import cn.fxdata.tv.view.CustomDialog;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+/**
+ * 收藏view与data适配器
+ */
+
+public class FavAdapter extends BaseAdapter {
+
+    private Context mContext;
+    private final static String TAG = "FavAdapter";
+
+    // 视频收藏数据类
+    public class FavVideoItem {
+
+        public String videoId;
+        public String videoName;
+        public String videoTime;
+        public String videoPlayTime;
+        public String videoUrl;
+
+        public String getVideoId() {
+            return videoId;
+        }
+
+        public void setVideoId(String videoId) {
+            this.videoId = videoId;
+        }
+
+        public String getVideoName() {
+            return videoName;
+        }
+
+        public void setVideoName(String videoName) {
+            this.videoName = videoName;
+        }
+
+        public String getVideoTime() {
+            return videoTime;
+        }
+
+        public void setVideoTime(String videoTime) {
+            this.videoTime = videoTime;
+        }
+
+        public String getVideoPlayTime() {
+            return videoPlayTime;
+        }
+
+        public void setVideoPlayTime(String videoPlayTime) {
+            this.videoPlayTime = videoPlayTime;
+        }
+
+        public String getVideoUrl() {
+            return videoUrl;
+        }
+
+        public void setVideoUrl(String videoUrl) {
+            this.videoUrl = videoUrl;
+        }
+    }
+
+    private ArrayList<FavVideoItem> mItems = new ArrayList<FavVideoItem>();
+
+    private FavDbUtil favDbInstance;
+    private RequestQueue mQueue;
+    private ImageLoader mImageLoader;
+
+    public FavAdapter(Context context) {
+        mContext = context;
+        // mItems = item;
+        Log.d(TAG, "FavAdapter(Context context) constructor");
+        // 获取收藏数据库的执行实例
+        favDbInstance = FavDbUtil.getInstance(mContext);
+
+        File cacheDir = new File(context.getCacheDir(), "FxCache");
+        mQueue = Volley.newRequestQueue(context, new DiskCache(cacheDir));
+        mImageLoader = new ImageLoader(mQueue, null, null, null);
+
+        initFavdata();
+    }
+
+    private void initFavdata() {
+        // TODO Auto-generated method stub
+        Cursor mCursor = null;
+        SQLiteDatabase mSQLiteDatabase = null;
+        try {
+            // 获取收藏数据库的数据操作实例
+            mSQLiteDatabase = favDbInstance.getDatabase();
+            mCursor = mSQLiteDatabase.query(FlyShareTVdataHelper.TBL_FAV_VIDEOS, new String[] { "movie_id,movie_name,movie_time,movie_play_times,movie_image" }, null, null, null, null, null);
+            mCursor.moveToFirst();
+            while (!mCursor.isAfterLast()) {
+                FavVideoItem vItem = new FavVideoItem();
+                vItem.setVideoId(mCursor.getString(mCursor.getColumnIndex(FlyShareTVdataHelper.MOVIE_ID)));
+                vItem.setVideoName(mCursor.getString(mCursor.getColumnIndex(FlyShareTVdataHelper.MOVIE_NAME)));
+                vItem.setVideoPlayTime(mCursor.getString(mCursor.getColumnIndex(FlyShareTVdataHelper.MOVIE_PLAY_TIMES)));
+                vItem.setVideoTime(mCursor.getString(mCursor.getColumnIndex(FlyShareTVdataHelper.MOVIE_TIME)));
+                vItem.setVideoUrl(mCursor.getString(mCursor.getColumnIndex(FlyShareTVdataHelper.MOVIE_IMAGE)));
+                mItems.add(vItem);
+                mCursor.moveToNext();
+
+                Log.d(TAG, "Fav movie items videoname -- >>" + vItem.getVideoName());
+            }
+
+        } finally {
+            if (mCursor != null && !mCursor.isClosed()) {
+                mCursor.close();
+            }
+            favDbInstance.closeDataBase();
+        }
+    }
+
+    @Override
+    public int getCount() {
+        // TODO Auto-generated method stub
+        return mItems.size();
+    }
+
+    @Override
+    public Object getItem(int arg0) {
+        // TODO Auto-generated method stub
+        return mItems.get(arg0);
+    }
+
+    @Override
+    public long getItemId(int arg0) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, ViewGroup arg2) {
+
+        ViewHolder holder;
+
+        if (convertView == null) {
+            holder = new ViewHolder();
+            convertView = LayoutInflater.from(mContext).inflate(R.layout.row_fav_vieo_item, null);
+            holder.videoImageView = (ImageView) convertView.findViewById(R.id.videoThumb);
+            holder.videoName = (TextView) convertView.findViewById(R.id.videoName);
+            holder.videoPlayTimes = (TextView) convertView.findViewById(R.id.videoPlayTimes);
+            holder.removeImageView = (ImageView) convertView.findViewById(R.id.videoFavDelete);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        // 得到相应的收藏行数据
+        FavVideoItem favVideoItem = mItems.get(position);
+        if (favVideoItem != null) {
+            if (false == StringUtils.isNullOrEmpty(favVideoItem.getVideoUrl())) {
+                // 用volley图片加载器加载图片，这里有个问题，我们要为图片加入缓存机制，这样收藏的时候，才不会从网络重新loading图片
+                holder.videoImageView.setTag(position);
+                ImageListener imageListener = ImageLoader.getImageListener(holder.videoImageView, R.drawable.video_image_03, R.drawable.video_image_03);
+                mImageLoader.get(favVideoItem.getVideoUrl(), imageListener);
+            }
+
+            if (false == StringUtils.isNullOrEmpty(favVideoItem.getVideoName())) {
+                holder.videoName.setText(favVideoItem.getVideoName());
+            } else {
+                holder.videoName.setText("未得到影片名");
+            }
+
+            if (false == StringUtils.isNullOrEmpty(favVideoItem.getVideoPlayTime())) {
+                holder.videoPlayTimes.setText(favVideoItem.getVideoPlayTime()+"次播放");
+            } else {
+                holder.videoPlayTimes.setText("0次播放");
+            }
+        }
+
+        // 点击删除的时候，删除相应行的收藏数据
+        holder.removeImageView.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                final CustomDialog dialog = new CustomDialog(mContext, "童鞋，确定要删除这条收藏吗", "确定", "取消");
+                dialog.setOnButtonClickListener(new CustomDialog.OnButonClickListener() {
+
+                    @Override
+                    public void onLeftButtonClick() {
+                        if (dialog != null && dialog.isShowing()) {
+                            // 删除数据，隐藏view
+                            FavDbUtil.getInstance(mContext).removeFavVideo(mItems.get(position).getVideoId());
+                            mItems.remove(position);
+                            // 通知更新
+                            notifyDataSetChanged();
+
+                            dialog.dismiss();
+
+                            ToastUtils.ToastAdd(mContext, "删除成功");
+                        }
+                    }
+
+                    @Override
+                    public void onRightButtonClick() {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+
+        return convertView;
+    }
+
+
+    private class ViewHolder {
+        private TextView videoName;
+        private TextView videoPlayTimes;
+        private ImageView videoImageView;
+        private ImageView removeImageView;
+    }
+
+}

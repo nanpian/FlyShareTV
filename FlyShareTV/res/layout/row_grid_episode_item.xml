@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/episode_grid_textview"
+    style="@android:style/TextAppearance.DeviceDefault.Small"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="1"
+    android:paddingLeft="8dp"
+    android:paddingTop="5dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="5dp"
+    android:background="@drawable/episode_textview_border"
+    android:gravity="center"
+    android:textSize="14sp" >
+</TextView>

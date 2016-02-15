@@ -1,0 +1,124 @@
+package com.zgntech.core.manager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.zgntech.base.R;
+
+
+
+import android.content.Context;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+
+public class UIFragmentManager {
+	private Context mContext;
+	private FragmentManager fragmentManager;
+	private Map<String, Fragment> fmap;// 当需要组管理时使用
+	private Map<Fragment, Boolean> moveMap;
+	private Map<Fragment, Integer> indexMap;
+	private Fragment cruFragment;
+	private int fid;
+
+	public UIFragmentManager(Context context, int fid,
+			FragmentManager fragmentManager) {
+		this.mContext = context;
+		this.fid = fid;
+		this.fragmentManager = fragmentManager;
+		fmap = new HashMap<String, Fragment>();
+		moveMap = new HashMap<Fragment, Boolean>();
+		indexMap = new HashMap<Fragment, Integer>();
+	}
+
+	public void put(String key, Fragment fragment) {
+		put(key, fragment, false);
+	}
+
+	public void put(String key, Fragment fragment, boolean isShowMove) {
+		if (null == fmap.get(key)) {
+			try {
+				removeFragment(key);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			fmap.put(key, fragment);
+			moveMap.put(fragment, isShowMove);
+			indexMap.put(fragment, indexMap.size() + 1);
+		}
+	}
+
+	public Fragment getCruFragment() {
+		return cruFragment;
+	}
+
+	/**
+	 * 删除fragment
+	 * 
+	 * @param key
+	 */
+	public void removeFragment(String key) {
+		FragmentTransaction transaction = fragmentManager.beginTransaction();
+		Fragment f = fragmentManager.findFragmentByTag(key);
+		if (null != f) {
+			transaction.remove(f);
+		}
+		transaction.commit();
+		if (null != fmap) {
+			if (cruFragment == fmap.get(key)) {
+				cruFragment = null;
+			}
+			fmap.remove(key);
+		}
+	}
+
+	/**
+	 * 显示当前fragment 隐藏之前fragment
+	 * 
+	 * @param key
+	 */
+	public void show(String key) {
+		Fragment fragment = fmap.get(key);
+		if (cruFragment == fragment) {
+			return;
+		}
+		FragmentTransaction transaction = null;
+		if(null == cruFragment){ //first in not animation
+			transaction = fragmentManager.beginTransaction();			
+		}else if (indexMap.get(fragment) > indexMap.get(cruFragment)) {
+		    transaction = fragmentManager.beginTransaction(); 
+/*			transaction = fragmentManager.beginTransaction().setCustomAnimations(
+					R.anim.push_left_in, R.anim.push_left_out, R.anim.push_left_in,
+					R.anim.push_left_out);*/
+		} else {
+		    transaction = fragmentManager.beginTransaction(); 
+/*			transaction = fragmentManager.beginTransaction().setCustomAnimations(
+					R.anim.push_right_in, R.anim.push_right_out, R.anim.push_right_in,
+					R.anim.push_right_out);*/
+		}
+	
+		if (!fragment.isAdded()) {
+			if (null != cruFragment) {
+				if (moveMap.get(cruFragment)) {
+					transaction.remove(cruFragment);
+				} else {
+					transaction.hide(cruFragment);
+				}
+			}
+			transaction.add(fid, fragment, key);
+		} else {
+			if (null != cruFragment) {
+				if (moveMap.get(cruFragment)) {
+					transaction.remove(cruFragment);
+				} else {
+					transaction.hide(cruFragment);
+				}
+			}
+			transaction.show(fragment);
+		}
+		cruFragment = fragment;
+		transaction.commit();
+	}
+
+}

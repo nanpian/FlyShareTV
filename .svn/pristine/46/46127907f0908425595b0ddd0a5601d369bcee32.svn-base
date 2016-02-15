@@ -1,0 +1,136 @@
+package cn.fxdata.tv.adapter;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.activity.SearchSchoolActivity.SchoolData;
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class PathAdapter extends BaseAdapter{
+	private Context mContext;
+	private ArrayList<String[]> mItems = new ArrayList<String[]>();
+	private ViewHolder viewHolder;
+	
+	public PathAdapter(Context context) {
+		mContext = context;
+		mItems.add(new String[]{"2015.6.22","观看了奔跑吧兄弟"});
+		mItems.add(new String[]{"2015.6.22","观看了奔跑吧兄弟"});
+		mItems.add(new String[]{"2015.6.21","观看了奔跑吧兄弟"});
+		mItems.add(new String[]{"2015.6.19","观看了奔跑吧兄弟"});
+		mItems.add(new String[]{"2015.6.19","观看了奔跑吧兄弟"});
+		mItems.add(new String[]{"2015.6.18","观看了奔跑吧兄弟"});
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return mItems.size();
+	}
+
+	@Override
+	public Object getItem(int arg0) {
+		// TODO Auto-generated method stub
+		return mItems.get(arg0);
+	}
+
+	@Override
+	public long getItemId(int arg0) {
+		// TODO Auto-generated method stub
+		return arg0;
+	}
+
+	@Override
+	public View getView(int position, View contentView, ViewGroup arg2) {
+		// TODO Auto-generated method stub
+		final String[] str = mItems.get(position);
+		viewHolder = new ViewHolder();
+        if (contentView == null) {
+        	contentView = LayoutInflater.from(mContext).inflate(R.layout.path_item,null);
+        }
+        viewHolder.pathdata = (TextView)contentView.findViewById(R.id.path_data);
+        viewHolder.pathcontent = (TextView)contentView.findViewById(R.id.path_content);
+        viewHolder.pathdelete = (ImageView)contentView.findViewById(R.id.path_delte);
+        if (position == 0) {
+        	if(isTheDay(str[0],"Today")){
+        		Log.d("renjun1","11111");
+        		viewHolder.pathdata.setText("今天");
+        	} else if (isTheDay(str[0],"Lastday")) {
+        		Log.d("renjun1","2222222222");
+        		viewHolder.pathdata.setText("昨天");
+        	} else {
+        	    viewHolder.pathdata.setText(str[0]);
+        	}
+        	viewHolder.pathdata.setVisibility(View.VISIBLE);
+        } else {
+        	if (str[0] == mItems.get(position-1)[0]) {
+        		viewHolder.pathdata.setVisibility(View.GONE);
+        	} else {
+        		if(isTheDay(str[0],"Today")){
+            		Log.d("renjun1","11111");
+            		viewHolder.pathdata.setText("今天");
+            	} else if (isTheDay(str[0],"Lastday")) {
+            		Log.d("renjun1","2222222222");
+            		viewHolder.pathdata.setText("昨天");
+            	} else {
+            	    viewHolder.pathdata.setText(str[0]);
+            	}
+        		viewHolder.pathdata.setVisibility(View.VISIBLE);
+        	}
+        }
+        viewHolder.pathcontent.setText(str[0]+" "+str[1]);
+		return contentView;
+	}
+	
+    private boolean isTheDay(String day, String compareday) {
+    	final long now = System.currentTimeMillis();
+    	final Calendar mCalendar=Calendar.getInstance();
+    	mCalendar.setTimeInMillis(now);
+    	int year = mCalendar.get(Calendar.YEAR);
+    	int month = mCalendar.get(Calendar.MONTH)+1;
+    	int date = mCalendar.get(Calendar.DATE);
+    	
+    	if(compareday == "Lastday") {
+    		mCalendar.add(Calendar.DATE, -1);
+    		month =mCalendar.get(Calendar.MONTH)+1;
+    		year = mCalendar.get(Calendar.YEAR);
+    		date = mCalendar.get(Calendar.DATE);
+    	}
+    	Log.d("renjun1","month: "+month+"year: "+year+"date;"+date);
+    	String myear = day.substring(0, day.indexOf("."));
+    	Log.d("renjun1","day.indexOf:"+day.indexOf("."));
+    	String mmonth = day.substring(day.indexOf(".")+1, day.lastIndexOf("."));
+    	//if (mmonth.length() == 1) {
+    	//	mmonth = "0"+mmonth;
+    	//}
+    	String mdate = day.substring(day.lastIndexOf(".")+1);
+    	//if (mdate.length() == 1) {
+    	//	mdate = "0"+mdate;
+    	//}
+    	Log.d("renjun1","myear:"+myear+"mmonth:"+mmonth+"mdate:"+mdate);
+    	if(myear.equalsIgnoreCase(Integer.toString(year))
+    			&& mmonth.equalsIgnoreCase(Integer.toString(month))
+    			&& mdate.equalsIgnoreCase(Integer.toString(date))) {
+    		return true;
+    		
+    	} else {
+    		return false;
+    	}
+	}
+    
+	private class ViewHolder {
+		private TextView pathdata;
+		private TextView pathcontent;
+		private ImageView pathdelete;
+	}
+
+}

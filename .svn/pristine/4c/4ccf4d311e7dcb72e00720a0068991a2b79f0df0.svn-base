@@ -1,0 +1,1031 @@
+package cn.fxdata.tv.utils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.SoftReference;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+
+import cn.fxdata.tv.cache.ImageCache;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
+import android.support.v4.util.LruCache;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.WindowManager;
+
+public class ImageUtil {
+    /**
+     * TAG
+     */
+    private static final String TAG = "ImageUtil";
+
+    /**
+     * 图像缓存手机路径的目录，主要用于缓存
+     */
+    public static final String SAVE_PHOTO_FLODER = Environment.getDataDirectory() + "/data/" + "FxApp/imagecache/";
+
+    /**
+     * 图像缓存SD卡路径的目录，主要用于缓�?
+     */
+    public static final String SAVE_SD_FLODER = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FxApp/imagecache/";
+    /**
+     * 图片保存到SD卡的路径
+     */
+    public static final String SAVE_SD_PHOTO = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FxApp/fx/";
+    /**
+     * 裁剪后的图片保存到SD卡的路径
+     */
+    public static final String SAVE_SD_PHOTO_TEMP = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FxApp/temp/";
+
+    /**
+     * 图片加载单例
+     */
+    private static ImageUtil mImageUtil;
+
+    /**
+     * 预留空间的最大高�?
+     */
+    public static final int OBLIGATE_HEIGHT = 130;
+
+    /**
+     * 预留空间的最大宽�?
+     */
+    public static final int OBLIGATE_WIGHT = 10;
+
+    /**
+     * 当前设备宽度
+     */
+    private static int deviceWidth;
+
+    /**
+     * 当前设备高度
+     */
+    private static int deviceHeight;
+
+    /**
+     * 当前设备分辨�?
+     */
+    private static float density;
+
+    /**
+     * 照片大小
+     */
+    public static int SIZE_PHOTO;
+
+    /**
+     * 大图展示
+     */
+    public static int GALLERY_PHOTO;
+
+    /**
+     * 大图展示
+     */
+    public static int BIG_SIZE_PHOTO;
+
+    /**
+     * 屏幕宽度
+     */
+    public static int SCREENWIDTH;
+
+    /**
+     * 屏幕高度
+     */
+    public static int DEVICEHEIGHT;
+
+    /**
+     * 图片缓存map id
+     */
+    private HashMap<Integer, SoftReference<Bitmap>> imageCacheBitForId = null;
+
+    /**
+     * 图片缓存map url
+     */
+    // private HashMap<String, SoftReference<Bitmap>> imageCacheBitForUrl =
+    // null;
+    private LruCache<String, Bitmap> mLruCache; // 硬引用缓存
+
+    /**
+     * 获取图片加载实例对象
+     * 
+     * @return 图片加载实例对象
+     */
+    public static synchronized ImageUtil getInstance(Context mContext) {
+        if (null == mImageUtil) {
+            mImageUtil = new ImageUtil(mContext);
+        }
+
+        return mImageUtil;
+    }
+
+    /**
+     * 构�?方法
+     */
+    private ImageUtil(Context mContext) {
+        imageCacheBitForId = new HashMap<Integer, SoftReference<Bitmap>>();
+
+        // imageCacheBitForUrl = new HashMap<String, SoftReference<Bitmap>>();
+        initImageMemoryCache();
+        // 获取手机基本屏幕数据
+        getPhoneConfiguration(mContext);
+
+        clearTempCache();
+
+        SIZE_PHOTO = (int) (48 * density);
+
+        GALLERY_PHOTO = (int) (96 * density);
+
+        BIG_SIZE_PHOTO = (int) (200 * density);
+    }
+
+    public void initImageMemoryCache() {
+        // 获取系统分配给每个应用程序的最大内存，每个应用系统分配32M
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory());
+        final int cacheSize = maxMemory / 4;
+        mLruCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                if (value != null)
+                    return value.getRowBytes() * value.getHeight();
+                else
+                    return 0;
+            }
+        };
+    }
+
+    /**
+     * 删除 临时目录下的所有文件
+     */
+    public void clearTempCache() {
+        File dir = new File(SAVE_SD_PHOTO_TEMP);
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            file.delete();
+        }
+    }
+
+    /**
+     * 从LruCache缓存获取图片
+     */
+    public Bitmap getBitmapFromCache(String url) {
+        synchronized (mLruCache) {
+            return mLruCache.get(url);
+        }
+    }
+
+    /**
+     * 将图片存储到LruCache
+     */
+    public void addBitmapToCache(String url, Bitmap bitmap) {
+        synchronized (mLruCache) {
+            if (getBitmapFromCache(url) == null) {
+                mLruCache.put(url, bitmap);
+            }
+        }
+    }
+
+    /**
+     * 回收Bitmap对象
+     * 
+     * @param url
+     */
+    public void recycleBitmapByUrl(String url) {
+        synchronized (mLruCache) {
+            mLruCache.remove(url);
+        }
+    }
+
+    /**
+     * 获取手机基本屏幕数据
+     * 
+     * @param mContext
+     */
+    private void getPhoneConfiguration(Context mContext) {
+        DisplayMetrics dm = new DisplayMetrics();
+        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(dm);
+        int screenWidth = dm.widthPixels;
+        int screenHeight = dm.heightPixels;
+        deviceWidth = screenWidth;
+        deviceHeight = screenHeight;
+        density = dm.density;
+        SCREENWIDTH = screenHeight;
+        DEVICEHEIGHT = screenHeight;
+    }
+
+    /**
+     * 根据索引在缓存里查找图片 For id
+     * 
+     * @param aKey
+     *            索引
+     * @return 图片
+     */
+    private Bitmap findBitmapInCache(int key) {
+        // �?��缓存里面有没�?
+        if (imageCacheBitForId.containsKey(key)) {
+            SoftReference<Bitmap> obj = imageCacheBitForId.get(key);
+
+            if (null != obj) {
+                return obj.get();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 根据索引在缓存里查找图片 For Url
+     * 
+     * @param aKey
+     *            索引
+     * @return 图片
+     */
+    private Bitmap findBitmapInCache(String key) {
+        // �?��缓存里面有没�?
+        // if (imageCacheBitForUrl.containsKey(key)) {
+        // SoftReference<Bitmap> obj = imageCacheBitForUrl.get(key);
+        //
+        // if (null != obj) {
+        // return obj.get();
+        // }
+        // }
+        //
+        // return null;
+        return getBitmapFromCache(key);
+    }
+
+    /**
+     * 从本地加载图�?根据图片宽度进行等比压缩)
+     * 
+     * @param url
+     *            图片的URL地址
+     * @param width
+     *            压缩的宽
+     * @param readCache
+     *            是否读取缓存
+     * @return 图片对象
+     */
+    public Bitmap findBitmapInCacheAndLocal(Context mContext, int id, int width, boolean readCache) {
+        Bitmap bitmap = null;
+
+        if (readCache) {
+            // �?��缓存有没有图�?
+            // bitmap = findBitmapInCache(id);
+            // bitmap = getBitmapFromCache();
+        }
+
+        if (null == bitmap) {
+            // 用url的MD5作为文件�?
+            bitmap = getBitmapByWidthFromResource(mContext, id, width);
+
+            if (null != bitmap) {
+                imageCacheBitForId.put(id, new SoftReference<Bitmap>(bitmap));
+            }
+        }
+
+        return bitmap;
+    }
+
+    /**
+     * 从本地加载图�?根据图片宽度进行等比压缩)
+     * 
+     * @param url
+     *            图片的URL地址
+     * @param width
+     *            压缩的宽
+     * @param readCache
+     *            是否读取缓存
+     * @return 图片对象
+     */
+    public Bitmap findBitmapInCacheAndLocal(String url, int width, boolean readCache) {
+        Bitmap bitmap = null;
+
+        url = StringUtils.decodeString(url);
+
+        if (readCache) {
+            // �?��缓存有没有图�?
+            bitmap = findBitmapInCache(url);
+        }
+
+        if (null == bitmap) {
+            // 用url的MD5作为文件�?
+            bitmap = findImageFromFile(url, width);
+
+            if (null != bitmap) {
+                // imageCacheBitForUrl.put(url, new
+                // SoftReference<Bitmap>(bitmap));
+                addBitmapToCache(url, bitmap);
+            }
+        }
+
+        return bitmap;
+    }
+
+    /**
+     * 从本地加载图�?根据图片宽度进行等比压缩)
+     * 
+     * @param url
+     *            图片的URL地址
+     * @param width
+     *            压缩的宽
+     * @param readCache
+     *            是否读取缓存
+     * @return 图片对象
+     */
+    public Bitmap findBitmapInCacheAndLocalForBrand(String path, int width, boolean readCache) {
+        Bitmap bitmap = null;
+
+        if (readCache) {
+            // �?��缓存有没有图�?
+            bitmap = findBitmapInCache(path);
+        }
+
+        if (null == bitmap) {
+            // 用url的MD5作为文件�?
+            bitmap = ImageUtil.getBitmapByWidth(path, width);
+
+            if (null != bitmap) {
+                // imageCacheBitForUrl.put(path, new
+                // SoftReference<Bitmap>(bitmap));
+                addBitmapToCache(path, bitmap);
+            }
+        }
+        return bitmap;
+    }
+
+    /**
+     * 根据resource id创建缩略�?
+     * 
+     * @param context
+     *            上下�?
+     * 
+     * @param imgId
+     *            resource id
+     * 
+     * @param width
+     *            缩略图的�?
+     * @return bitmap 指定宽高的缩略图
+     */
+    private static Bitmap getBitmapByWidthFromResource(Context context, int imgId, int width) {
+        Bitmap temBitmap = null;
+
+        try {
+            BitmapFactory.Options outOptions = new BitmapFactory.Options();
+
+            // 设置该属性为true，不加载图片到内存，只返回图片的宽高到options中�?
+            outOptions.inJustDecodeBounds = true;
+
+            // 加载获取图片的宽�?
+            BitmapFactory.decodeResource(context.getResources(), imgId, outOptions);
+
+            int height = outOptions.outHeight;
+            if (outOptions.outWidth > width) {
+                // 根据宽设置缩放比�?
+                outOptions.inSampleSize = outOptions.outWidth / width;
+                outOptions.outWidth = width;
+
+                // 计算缩放后的高度
+                height = outOptions.outHeight / outOptions.inSampleSize;
+                outOptions.outHeight = height;
+            }
+
+            // 重新设置该属性为false，加载图片返�?
+            outOptions.inJustDecodeBounds = false;
+            outOptions.inPurgeable = true;
+            outOptions.inInputShareable = true;
+            temBitmap = BitmapFactory.decodeResource(context.getResources(), imgId, outOptions);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        if (temBitmap == null) {
+            System.out.println("temBitmap == null");
+        }
+        return temBitmap;
+    }
+
+    /**
+     * 根据图片路径和图片宽度获取等宽压缩图�?
+     * 
+     * @param url
+     *            图片的URL地址
+     * @param width
+     *            要压缩的宽度
+     * @return Bitmap
+     */
+    public Bitmap findImageFromFile(String url, int width) {
+        String filePath = getPathByUrl(url);
+
+        if (!TextUtils.isEmpty(filePath)) {
+            return ImageUtil.getBitmapByWidth(filePath, width);
+        }
+
+        return null;
+    }
+
+    /**
+     * 根据url获得缓存文件的路�?
+     * 
+     * @param url
+     *            图片的url地址
+     * @return 返回的路�?
+     */
+    private String getPathByUrl(String url) {
+        File file = null;
+
+        // 先到SD卡下�?
+        if (externalMemoryAvailable()) {
+            file = new File(SAVE_SD_FLODER + ImageCache.getLogoKey(url));
+        }
+
+        // SD下找不到,到内存中�?
+        if (null == file || !file.exists()) {
+            file = new File(SAVE_PHOTO_FLODER + ImageCache.getLogoKey(url));
+        }
+
+        if (file.isFile() && file.exists()) {
+            return file.getPath();
+        }
+
+        return null;
+    }
+
+    /**
+     * 
+     * [�?��话功能简述]<BR>
+     * [功能详细描述]
+     * 
+     * @return is external memory available
+     */
+    private static boolean externalMemoryAvailable() {
+        return android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
+    }
+
+    /**
+     * 根据宽度从本地图片路径获取该图片的缩略图
+     * 
+     * @param localImagePath
+     *            本地图片的路�?
+     * @param width
+     *            缩略图的�?
+     * @return bitmap 指定宽高的缩略图
+     */
+    private static Bitmap getBitmapByWidth(String localImagePath, int width1) {
+        if (width1 <= 0) {
+            width1 = 1;
+        }
+
+        if (TextUtils.isEmpty(localImagePath)) {
+            return null;
+        }
+
+        Bitmap temBitmap = null;
+
+        try {
+            BitmapFactory.Options outOptions = new BitmapFactory.Options();
+            // 设置该属性为true，不加载图片到内存，只返回图片的宽高到options中�?
+            outOptions.inJustDecodeBounds = true;
+
+            // 加载获取图片的宽�?
+            BitmapFactory.decodeFile(localImagePath, outOptions);
+
+            if (outOptions.outWidth > width1) {
+                // 根据宽设置缩放比�?
+                outOptions.inSampleSize = outOptions.outWidth / width1;
+            }
+
+            // 重新设置该属性为false，加载图片返�?
+            outOptions.inJustDecodeBounds = false;
+            outOptions.inPurgeable = true;
+            outOptions.inInputShareable = true;
+            temBitmap = BitmapFactory.decodeFile(localImagePath, outOptions);
+
+            Log.i("evening", temBitmap.getHeight() + "=====" + temBitmap.getWidth());
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+        return temBitmap;
+
+        // Bitmap temBitmap = BitmapFactory.decodeFile(localImagePath);
+        // if (null == temBitmap)
+        // {
+        // return null;
+        // }
+        // int width = temBitmap.getWidth();
+        // int height = temBitmap.getHeight();
+        // int newWidth = width1;
+        // if (width1 <= width)
+        // {
+        // float scaleWidth = ((float) newWidth) / (float) width;
+        // int newHeight = (int) (scaleWidth * (float) height);
+        // // Matrix matrix = new Matrix();
+        // // matrix.postScale(scaleWidth, scaleWidth);
+        // // temBitmap = Bitmap.createBitmap(temBitmap, 0, 0, width, height,
+        // // matrix,
+        // // true);
+        // temBitmap = Bitmap.createScaledBitmap(temBitmap, newWidth,
+        // newHeight, false);
+        // }
+        // return temBitmap;
+    }
+
+    /**
+     * 从网络url获取图片
+     * 
+     * @param imageUrl
+     *            文件的网络地�?
+     * @param taskStatusListener
+     *            下载状�?的回调监�?
+     */
+    public synchronized Bitmap downloadImageByUrl(String imageUrl, int width) throws OutOfMemoryError {
+        if (TextUtils.isEmpty(imageUrl)) {
+            Log.e(TAG, "in URL : imageUrl is Null");
+
+            return null;
+        }
+        Log.d(TAG, "in URL : imageUrl " + imageUrl);
+
+        Bitmap bitmap = null;
+        InputStream inputStream = null;
+        FileOutputStream fOut = null;
+        URL url;
+
+        try {
+            FileUtil.checkFileExist(imageUrl);
+
+            // 获取图片存储路径
+            String storePath = FileUtil.getStorePath() + ImageCache.getLogoKey(imageUrl);
+            url = new URL(imageUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setConnectTimeout(20000);
+            conn.setUseCaches(false);
+            inputStream = conn.getInputStream();
+            bitmap = BitmapFactory.decodeStream(inputStream);
+
+            if (bitmap != null) {
+                if (MemoryStatus.externalMemoryAvailable()) {
+                    // 创建文件
+                    File f = FileUtil.createFile(storePath, false);
+                    fOut = new FileOutputStream(f);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fOut);
+                    fOut.flush();
+                    bitmap = getBitmapByWidth(storePath, width);
+                    // imageCacheBitForUrl.put(imageUrl, new
+                    // SoftReference<Bitmap>(bitmap));
+                    addBitmapToCache(imageUrl, bitmap);
+                } else {
+                    bitmap = getBitmapByWidth(bitmap, width);
+                    addBitmapToCache(imageUrl, bitmap);
+                    // imageCacheBitForUrl.put(imageUrl, new
+                    // SoftReference<Bitmap>(bitmap));
+                }
+            }
+
+        }catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        finally {
+            try {
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+                if (null != fOut) {
+                    fOut.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
+    }
+
+    /**
+     * 从网络url获取图片
+     * 
+     * @param imageUrl
+     *            文件的网络地�?
+     * @param taskStatusListener
+     *            下载状�?的回调监�?
+     */
+    public synchronized Bitmap downloadImageByUrl(String imageUrl, String path, int width) throws OutOfMemoryError {
+        if (TextUtils.isEmpty(imageUrl)) {
+
+            return null;
+        }
+
+        Log.d(TAG, "in URL : imageUrl " + imageUrl);
+
+        // if (FileUtil.checkFileExist(imageUrl)) {
+        // Log.e(TAG, "file has create");
+        // return null;
+        // }
+
+        FileUtil.checkFileExist(imageUrl);
+
+        Bitmap bitmap = null;
+        // 获取图片存储路径
+        String storePath = FileUtil.getStorePath() + ImageCache.getLogoKey(imageUrl);
+
+        InputStream inputStream = null;
+        FileOutputStream fOut = null;
+        FileOutputStream fOut2 = null;
+        URL url;
+        try {
+            url = new URL(imageUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setConnectTimeout(20000);
+            conn.setUseCaches(false);
+            inputStream = conn.getInputStream();
+            bitmap = BitmapFactory.decodeStream(inputStream);
+
+            if (bitmap != null) {
+                if (MemoryStatus.externalMemoryAvailable()) {
+                    // 创建文件
+                    File f = FileUtil.createFile(storePath, false);
+                    File f2 = FileUtil.createFile(path, false);
+                    fOut = new FileOutputStream(f);
+                    fOut2 = new FileOutputStream(f2);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fOut);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fOut2);
+                    fOut.flush();
+                    fOut2.flush();
+                    bitmap = getBitmapByWidth(bitmap, width);
+                    // imageCacheBitForUrl.put(imageUrl, new
+                    // SoftReference<Bitmap>(bitmap));
+                    addBitmapToCache(imageUrl, bitmap);
+                } else {
+                    bitmap = getBitmapByWidth(bitmap, width);
+                    addBitmapToCache(imageUrl, bitmap);
+                    // imageCacheBitForUrl.put(imageUrl, new
+                    // SoftReference<Bitmap>(bitmap));
+                }
+            }
+        } catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            try {
+                if (null != inputStream) {
+                    inputStream.close();
+                }
+                if (null != fOut && null != fOut2) {
+                    fOut.close();
+                    fOut2.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
+    }
+
+    /**
+     * 根据宽度从本地图片路径获取该图片的缩略图
+     * 
+     * @param localImagePath
+     *            本地图片的路�?
+     * @param width
+     *            缩略图的�?
+     * @return bitmap 指定宽高的缩略图
+     */
+    private static Bitmap getBitmapByWidth(Bitmap bt, int newWidth) {
+        // 获取这个图片的宽和高
+        float width = bt.getWidth();
+        float height = bt.getHeight();
+        // 创建操作图片用的matrix对象
+        Matrix matrix = new Matrix();
+        // 计算宽高缩放�?
+        float scaleWidth = ((float) newWidth) / width;
+        // 缩放图片动作
+        matrix.postScale(scaleWidth, scaleWidth);
+        Bitmap bitmap = Bitmap.createBitmap(bt, 0, 0, (int) width, (int) height, matrix, true);
+        return bitmap;
+    }
+
+    public static Bitmap GetRoundedCornerBitmap(Bitmap bitmap) {
+        try {
+            Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Config.ARGB_8888);
+            Canvas canvas = new Canvas(output);
+            final Paint paint = new Paint();
+            final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            final RectF rectF = new RectF(new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()));
+            final float roundPx = 14;
+            paint.setAntiAlias(true);
+            canvas.drawARGB(0, 0, 0, 0);
+            paint.setColor(Color.BLACK);
+            canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+            final Rect src = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            canvas.drawBitmap(bitmap, src, rect, paint);
+            new SoftReference<Bitmap>(output);
+            return output;
+        } catch (Exception e) {
+            return bitmap;
+        }
+    }
+
+    public static Bitmap toRoundCorner(Bitmap bitmap, int pixels) {
+
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        final float roundPx = pixels;
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
+    }
+
+    /**
+     * 根据图片路径�?获取适合屏幕大小的位�?
+     * 
+     * @param path
+     *            图片的路�?
+     * @return 符合条件的位�?
+     */
+    public static Bitmap getBitmapForSceen(String path) {
+        Bitmap temBitmap = null;
+
+        try {
+            BitmapFactory.Options outOptions = new BitmapFactory.Options();
+
+            // 设置该属性为true，不加载图片到内存，只返回图片的宽高到options中�?
+            outOptions.inJustDecodeBounds = true;
+
+            // 加载获取图片的宽�?
+            BitmapFactory.decodeFile(path, outOptions);
+
+            // 显示图片的区域最大�?
+            int maxHeight = (int) (deviceHeight - density * OBLIGATE_HEIGHT);
+            int maxWidth = (int) (deviceWidth - density * OBLIGATE_WIGHT);
+
+            // 缩放后的宽高
+            int width;
+            int height;
+
+            // 缩放系数
+            float scale;
+
+            // 当图片的宽高都小于区域最大�?时，可直接显示图片片
+            if (outOptions.outHeight <= maxHeight && outOptions.outWidth <= maxWidth) {
+                outOptions.inJustDecodeBounds = false;
+                outOptions.inPurgeable = true;
+                outOptions.inInputShareable = true;
+                return BitmapFactory.decodeFile(path, outOptions);
+            }
+            // 当图片的宽或者高不小于最大�?时，则需要对图片处理以显示最佳效果�?
+            else {
+                // 根据宽高情况分别设置缩放比例
+                if ((float) outOptions.outHeight / outOptions.outWidth > (float) maxHeight / maxWidth) {
+                    // 以高为标准缩�?
+                    height = maxHeight;
+                    scale = (float) outOptions.outHeight / maxHeight;
+                    width = (int) (outOptions.outWidth / scale);
+                } else {
+                    // 以宽为标准缩�?
+                    width = maxWidth;
+                    scale = (float) outOptions.outWidth / maxWidth;
+                    height = (int) (outOptions.outHeight / scale);
+                }
+            }
+
+            temBitmap = getThumbnailFromLocalImage(path, width, height);
+        } catch (Throwable t) {
+            Log.d(TAG, "t=" + t);
+            t.printStackTrace();
+        }
+
+        return temBitmap;
+    }
+
+    /**
+     * 从本地图片路径获取该图片的缩略图
+     * 
+     * @param localImagePath
+     *            本地图片的路�?
+     * @param width
+     *            缩略图的�?
+     * @param height
+     *            缩略图的�?
+     * @return bitmap 指定宽高的缩略图
+     */
+    public static Bitmap getThumbnailFromLocalImage(String localImagePath, int width, int height) {
+        if (TextUtils.isEmpty(localImagePath)) {
+            Log.e(TAG, "Error!!localImagePath is null...");
+            return null;
+        }
+
+        Bitmap temBitmap = null;
+
+        try {
+            BitmapFactory.Options outOptions = new BitmapFactory.Options();
+
+            // 设置该属性为true，不加载图片到内存，只返回图片的宽高到options中�?
+            outOptions.inJustDecodeBounds = true;
+
+            // 加载获取图片的宽�?
+            BitmapFactory.decodeFile(localImagePath, outOptions);
+
+            // 根据宽高情况分别设置缩放比例
+            if (outOptions.outWidth > outOptions.outHeight) {
+                outOptions.inSampleSize = outOptions.outWidth / width;
+                if (outOptions.inSampleSize <= 0) {
+                    outOptions.inSampleSize = 1;
+                }
+                outOptions.outWidth = width;
+                outOptions.outHeight = outOptions.outHeight / outOptions.inSampleSize;
+            } else {
+                outOptions.inSampleSize = outOptions.outHeight / height;
+                if (outOptions.inSampleSize <= 0) {
+                    outOptions.inSampleSize = 1;
+                }
+                outOptions.outHeight = height;
+                outOptions.outWidth = outOptions.outWidth / outOptions.inSampleSize;
+            }
+
+            // 重新设置 inJustDecodeBounds 为false ，decode出缩略图
+            outOptions.inJustDecodeBounds = false;
+            outOptions.inPurgeable = true;
+            outOptions.inInputShareable = true;
+            temBitmap = BitmapFactory.decodeFile(localImagePath, outOptions);
+
+            // 因为缩略图的长宽不能严格符合要求，用缩略图重新生成要求的长宽图片
+            if (temBitmap != null && temBitmap.getWidth() != width && temBitmap.getHeight() != height) {
+                Bitmap desBitmap = Bitmap.createScaledBitmap(temBitmap, width, height, true);
+                temBitmap.recycle();
+                temBitmap = null;
+                return desBitmap;
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+        return temBitmap;
+    }
+
+    /**
+     * create the bitmap from a byte array
+     * 
+     * @param src
+     *            the bitmap object you want proecss
+     * @param watermark
+     *            the water mark above the src
+     * @return return a bitmap object ,if paramter's length is 0,return null
+     */
+    public String createBitmapAddLogo(Bitmap src, Context mContext) {
+        if (src == null) {
+            return null;
+        }
+        // if (null == watermark)
+        // {
+        // SoftReference<Bitmap> obj = imageCacheBitForId.get(R.drawable.logo);
+        //
+        // if (null != obj)
+        // {
+        // watermark = obj.get();
+        // }
+        // else
+        // {
+        // watermark = BitmapFactory.decodeResource(mContext.getResources(),
+        // R.drawable.logo);
+        // imageCacheBitForId.put(R.drawable.logo,
+        // new SoftReference<Bitmap>(watermark));
+        // }
+        // }
+        //
+        // int w = src.getWidth();
+        // int h = src.getHeight();
+        // int ww = watermark.getWidth();
+        // int wh = watermark.getHeight();
+        // //create the new blank bitmap
+        // Bitmap newb = Bitmap.createBitmap(w, h, Config.ARGB_8888);
+        // Canvas cv = new Canvas(newb);
+        // //draw src into
+        // cv.drawBitmap(src, 0, 0, null);
+        // //draw watermark into
+        // cv.drawBitmap(watermark, w - ww + 5, h - wh + 5, null);
+        // //save all clip
+        // cv.save(Canvas.ALL_SAVE_FLAG);
+        // //store
+        // cv.restore();
+
+        String string1 = "/sdcard/Tyloo/downloadimage/";
+        String string = "/sdcard/Tyloo/downloadimage/" + System.currentTimeMillis() + ".png";
+        File f = new File(string);
+        File f1 = new File(string1);
+        if (!f1.exists()) {
+            f1.mkdirs();
+        }
+        try {
+            f.createNewFile();
+            FileOutputStream fOut = null;
+            fOut = new FileOutputStream(f);
+            src.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return string;
+    }
+
+    /**
+     * �?��片上面写文字，返回图片对�?
+     * 
+     * @return
+     */
+    public BitmapDrawable writStrToImg(Context context, Bitmap imgBit, String str) {
+
+        Paint mLogInPaint = new Paint();
+        mLogInPaint.setTextSize(18.0f); // 其实这里要是不设置，在我手机上是12的�?
+        Rect rect = new Rect();
+        mLogInPaint.getTextBounds(str, 0, str.length(), rect);
+        int FontHeight = rect.height();
+        int FontWidth = rect.width();
+
+        Bitmap photo = imgBit;
+        int width = photo.getWidth(), hight = photo.getHeight();
+
+        int newWidth = width;
+        int newHight = hight;
+        if (width < FontWidth) {
+            newWidth = (int) (width * ((float) FontWidth / width)) + 30;
+            newHight = hight;
+        }
+
+        Matrix matrix = new Matrix();
+        float scaleWidht = ((float) newWidth / width);
+        float scaleHeight = ((float) hight / hight);
+        matrix.postScale(scaleWidht, scaleHeight);
+        photo = Bitmap.createBitmap(imgBit, 0, 0, width, hight, matrix, true);
+
+        Bitmap icon = Bitmap.createBitmap(newWidth, hight, Bitmap.Config.ARGB_8888); // 建立�?��空的BItMap
+        Canvas canvas = new Canvas(icon);// 初始化画布绘制的图像到icon�?
+
+        Paint photoPaint = new Paint(); // 建立画笔
+        photoPaint.setDither(true); // 获取跟清晰的图像采样
+        photoPaint.setFilterBitmap(true);// 过滤�?��
+
+        Rect src = new Rect(0, 0, newWidth, photo.getHeight());// 创建�?��指定的新矩形的坐�?
+
+        Rect dst1 = new Rect(0, 0, newWidth, newHight);// 创建�?��指定的新矩形的坐�?
+
+        canvas.drawBitmap(photo, src, dst1, photoPaint);// 将photo
+                                                        // 缩放或则扩大�?dst使用的填充区photoPaint
+
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DEV_KERN_TEXT_FLAG);// 设置画笔
+        textPaint.setTextSize(18.0f);// 字体大小
+        textPaint.setTypeface(Typeface.DEFAULT_BOLD);// 采用默认的宽�?
+        textPaint.setColor(Color.WHITE);// 采用的颜�?
+        // textPaint.setShadowLayer(3f, 1,
+        // 1,this.getResources().getColor(android.R.color.background_dark));//影音的设�?
+        canvas.drawText(str, 8, 28, textPaint);// 绘制上去字，�?��未知x,y采用那只笔绘�?
+        canvas.save(Canvas.ALL_SAVE_FLAG);
+
+        canvas.restore();
+        BitmapDrawable bd = new BitmapDrawable(context.getResources(), icon);
+        return bd;
+    }
+}

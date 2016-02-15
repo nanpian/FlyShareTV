@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="drawable" name="transparent">#00ffffff</item>
+    <item type="drawable" name="drawable_line_day">#cccccc</item>
+    <item type="drawable" name="drawable_line_night">#7a7a7a</item>
+    <item type="drawable" name="img_alpha">#77000000</item>
+    <item type="drawable" name="background_dialog">#55000000</item>
+    <item type="drawable" name="background_white">#ffffff</item>
+</resources>

@@ -1,0 +1,30 @@
+package cn.fxdata.tv.fragment;
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.adapter.PathAdapter;
+
+
+/**
+ * Created by Jianyong on 15/6/12.
+ */
+public class OwnerMsgPathFragment extends Fragment {
+	private ListView mListView;
+	private PathAdapter mPathAdapter;
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final View view  = inflater.inflate(R.layout.owner_msg_path_fragment, container, false);
+        mListView = (ListView)view.findViewById(R.id.path_list);
+        mPathAdapter = new PathAdapter(getActivity());
+        mListView.setAdapter(mPathAdapter);
+    	return view;
+    }
+}
+
+

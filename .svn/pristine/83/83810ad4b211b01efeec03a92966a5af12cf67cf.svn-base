@@ -1,0 +1,80 @@
+package cn.fxdata.tv.activity.user;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ToggleButton;
+import cn.fxdata.tv.R;
+
+public class UserSettingActivity extends Activity implements OnClickListener {
+    private Button topright;
+    private ImageView left, right2;
+    private TextView tv_title;
+    private ToggleButton wifiSwitch;
+    SharedPreferences sharedPreferences;
+    private boolean isWifiOnly;
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_usersetting);
+        initview();
+    }
+
+    private void initview() {
+        tv_title = (TextView) findViewById(R.id.title);
+        tv_title.setText("设置");
+        right2 = (ImageView) findViewById(R.id.iv_right2);
+        right2.setVisibility(right2.GONE);
+        left = (ImageView) findViewById(R.id.iv_left);
+        left.setOnClickListener(this);
+        wifiSwitch = (ToggleButton) findViewById(R.id.btn_gesture_switch);
+        sharedPreferences = getSharedPreferences("SystemSetting",
+                Context.MODE_PRIVATE);
+        isWifiOnly = sharedPreferences.getBoolean("wifionly", true);
+        wifiSwitch.setChecked(isWifiOnly);
+        wifiSwitch.setOnCheckedChangeListener(mChangelistener);
+    }
+
+    private void reflashWifistate() {
+        // TODO Auto-generated method stub
+        isWifiOnly = !isWifiOnly;
+        wifiSwitch.setChecked(isWifiOnly);
+        Editor editor = sharedPreferences.edit();
+        editor.putBoolean("wifionly", isWifiOnly);
+        editor.commit();
+    }
+
+    OnCheckedChangeListener mChangelistener = new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView,
+                boolean isChecked) {
+            // TODO Auto-generated method stub
+            reflashWifistate();
+        }
+
+    };
+
+    @Override
+    public void onClick(View v) {
+        // TODO Auto-generated method stub
+        switch (v.getId()) {
+        case R.id.iv_left:
+            finish();
+            break;
+        default:
+            break;
+        }
+    }
+}

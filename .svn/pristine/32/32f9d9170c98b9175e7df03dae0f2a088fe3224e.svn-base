@@ -1,0 +1,99 @@
+package cn.fxdata.tv.adapter;
+
+import java.util.List;
+
+import com.android.volley.image.ImageLoader;
+import com.android.volley.toolbox.BaseImageLoader.ImageListener;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.adapter.MoviesNowAdapter.OnMoviesListClickListener;
+import cn.fxdata.tv.bean.NewMoviesReturn.Movies;
+import cn.fxdata.tv.http.VolleyRequestManager;
+import cn.fxdata.tv.utils.DPIUtil;
+import cn.fxdata.tv.utils.StringUtils;
+import android.app.Activity;
+import android.content.Context;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+
+public class MoviesPrevAdapter extends BaseAdapter {
+
+    public Context context;
+    public List<Movies> moviesList;
+    private LayoutInflater inflater;
+    private int width;
+    private OnMoviesListClickListener onMoviesListClickListener;
+
+    public MoviesPrevAdapter(Context context, List<Movies> moviessList) {
+        this.context = context;
+        this.moviesList = moviessList;
+        inflater = LayoutInflater.from(context);
+        Display display = ((Activity) context).getWindowManager().getDefaultDisplay();
+        width = display.getWidth();
+    }
+
+    @Override
+    public int getCount() {
+        // TODO Auto-generated method stub
+        return moviesList == null ? 0 : moviesList.size();
+    }
+
+    @Override
+    public Object getItem(int item) {
+        // TODO Auto-generated method stub
+        return moviesList == null ? null : moviesList.get(item);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        // TODO Auto-generated method stub
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // TODO Auto-generated method stub
+        ViewHolder holder;
+        ImageView imageView;
+        //if (convertView == null) {
+            holder = new ViewHolder();
+            convertView = new ImageView(context);
+            // convertView =
+            // LayoutInflater.from(context).inflate(R.layout.row_vedio_image_item,
+            // null);
+            holder.movieImage = new ImageView(context);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width / 3 - 15, LayoutParams.FILL_PARENT);
+            holder.movieImage.setLayoutParams(params);
+            holder.movieImage.setPadding(DPIUtil.dip2px(5), 0, DPIUtil.dip2px(5), 0);
+            holder.movieImage.setScaleType(ScaleType.CENTER_CROP);
+
+            // holder.movieImage.setLayoutParams(new LayoutParams(width / 2 -20,
+            // (int) ((width / 2 -20)*1.6)));
+            holder.movieImage.setTag(position);
+            convertView.setTag(holder);
+        //} else {
+            //holder = (ViewHolder) convertView.getTag();
+       // }
+
+        Movies movie = moviesList.get(position);
+
+        if (false == StringUtils.isNullOrEmpty(movie.getThumb())) {
+            holder.movieImage.setTag(position);
+
+            ImageListener imageListener = ImageLoader.getImageListener(holder.movieImage, R.drawable.video_image_03, R.drawable.video_image_03);
+            VolleyRequestManager.getInstance().getImageLoader().get(movie.getThumb(), imageListener);
+        }
+        return holder.movieImage;
+    }
+
+    class ViewHolder {
+        private ImageView movieImage;
+    }
+}

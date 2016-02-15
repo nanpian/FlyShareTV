@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="cn.fxdata.tv"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="21" />
+
+    <application
+        android:name="cn.fxdata.tv.application.FxApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Light.NoTitleBar" >
+        <activity
+            android:name="cn.fxdata.tv.activity.TestVideoViewActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+
+            <!--
+                 <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            -->
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.main.MainFragmentActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.OwnerMsgActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+            <intent-filter>
+                <action android:name="shareTv_download_progress" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.SearchHistoryActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.MoviePlayRecordsActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.ForplayVideoViewActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.ForcastVideoDetailActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.ForplayVideoDetailActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.SearchResultActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.SearchSchoolActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.activity.MovieActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape" >
+        </activity>
+        <activity android:name="cn.fxdata.tv.activity.TestActivity" >
+        </activity>
+        <activity android:name="cn.fxdata.tv.activity.SystemSettingActivity" />
+        <activity android:name="cn.fxdata.tv.web.WebActivity" />
+        <activity android:name="cn.fxdata.tv.activity.OwnerMsgEditActivity" />
+        <activity android:name="cn.fxdata.tv.fragment.HotplayClassifyActivity" />
+        <!-- User -->
+        <activity
+            android:name="cn.fxdata.tv.activity.UserActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.RegisterActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.LoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.SearchPwActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.SearchPwModfiyActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.SearchPwCompleteActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.UserSettingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.UserInformationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.UserLoginedActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.PhotoSelectActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="cn.fxdata.tv.activity.UserInformationModfiyActivity"
+            android:screenOrientation="portrait" />
+
+        <service android:name="cn.fxdata.tv.service.DownloadManagerService" >
+            <intent-filter>
+                <action android:name="cn.fxdata.tv.download_action" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="com.mob.tools.MobUIShell"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:windowSoftInputMode="stateHidden|adjustResize" >
+            <intent-filter>
+                <data android:scheme="tencent100371282" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="cn.fxdata.tv.utils.WXEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+    </application>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <!-- 蓝牙分享所需的权限 -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+</manifest>

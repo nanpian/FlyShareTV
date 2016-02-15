@@ -1,0 +1,290 @@
+package cn.fxdata.tv.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+import cn.fxdata.tv.activity.ForcastVideoDetailActivity;
+import cn.fxdata.tv.activity.ForplayVideoViewActivity;
+import cn.fxdata.tv.adapter.ImageWallAdapter;
+import cn.fxdata.tv.adapter.MoviesPreAdapter;
+import cn.fxdata.tv.base.BaseTitleBarFragment;
+import cn.fxdata.tv.bean.NewMoviesReturn;
+import cn.fxdata.tv.bean.NewMoviesReturn.Movies;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.http.VolleyRequestManager;
+import cn.fxdata.tv.utils.CountDownUtil;
+import cn.fxdata.tv.utils.DPIUtil;
+import cn.fxdata.tv.utils.Log;
+import cn.fxdata.tv.utils.MJsonUtil;
+import cn.fxdata.tv.utils.MyCountdownTimer;
+import cn.fxdata.tv.view.DateDrawable;
+
+import com.android.volley.Listener;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyTools;
+import com.android.volley.Request.Method;
+import com.android.volley.image.ImageLoader;
+import com.android.volley.request.StringRequest;
+import com.android.volley.toolbox.BaseImageLoader.ImageListener;
+import com.google.gson.reflect.TypeToken;
+import com.pinterest.MultiColumnPullToRefreshListView;
+import com.pinterest.MultiColumnPullToRefreshListView.OnRefreshListener;
+import com.pinterest.internal.PLA_AdapterView;
+import com.pinterest.internal.PLA_AdapterView.OnItemClickListener;
+
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout.LayoutParams;
+import cn.fxdata.tv.R;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-30
+ * @version：V1.0
+ */
+public class LatestVedioFragment extends BaseTitleBarFragment {
+
+    private static final String LatestVedioTitle = "超清速递";
+    private static final String TAG = "LatestVideoFragment";
+    public VolleyTools tools;
+    private MultiColumnPullToRefreshListView vedioPullToRefreshListView;
+    private ImageWallAdapter mAdapter;
+    private int timeWidth = DPIUtil.getWidth() * 5 / 720;
+    private int timeHeight = DPIUtil.getWidth() * 28 / 720;
+    private int textSize = DPIUtil.getHeight() * 60 / 1280;
+    private int[] array = new int[] { R.drawable.video_image_01, R.drawable.video_image_02, R.drawable.video_image_03, R.drawable.video_image_04, R.drawable.video_image_02, R.drawable.video_image_03,
+            R.drawable.video_image_04, R.drawable.video_image_02, R.drawable.video_image_03, R.drawable.video_image_04, R.drawable.video_image_02, R.drawable.video_image_03,
+            R.drawable.video_image_04, R.drawable.video_image_02, R.drawable.video_image_03, R.drawable.video_image_04, R.drawable.video_image_02, R.drawable.video_image_03, R.drawable.video_image_04 };
+    private static DateDrawable dateDrawable;
+    // 标志位，标志已经初始化完成。
+    private boolean isPrepared;
+    // 返回列表
+    private List<Movies> list_now = new ArrayList<Movies>();
+    private List<Movies> list_pre = new ArrayList<Movies>();
+    private MoviesPreAdapter moviesPreAdapter;
+    private ImageView image2;
+    private ImageView image3;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        setTitleText(LatestVedioTitle);
+        setRightImageView(R.drawable.icon_person_avatar);
+        setRight2ImageView(R.drawable.icon_history_clock);
+        setContentLayout(R.layout.frag_main_latest_vedio);
+        vedioPullToRefreshListView = (MultiColumnPullToRefreshListView) layoutContent.findViewById(R.id.video_listview);
+        View header = inflater.inflate(R.layout.view_listview_header, null);
+        ImageView image1 = (ImageView) header.findViewById(R.id.header_image1);
+        image2 = (ImageView) header.findViewById(R.id.header_image2);
+        image3 = (ImageView) header.findViewById(R.id.header_image3);
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        int width = display.getWidth();
+        Log.d("DateDrawable", " display width -->>  = " + width + " " + width / 9);
+        image1.setLayoutParams(new LayoutParams(width / 3, LayoutParams.MATCH_PARENT));
+        dateDrawable = new DateDrawable();
+        // 设置字体样式
+        Typeface mTypeFace = Typeface.createFromAsset(this.getActivity().getAssets(), "font/number.ttf");
+
+        String color = "#252525";
+        dateDrawable.setTypeFace(mTypeFace);
+        // dateDrawable.setPointColor(Color.BLACK);
+        // dateDrawable.setBackgroundColor(Color.parseColor("#00000000"));
+        dateDrawable.setBackgroundWidth(width / 9);
+        dateDrawable.setBackgroundHeight(timeHeight);
+        dateDrawable.setTextSize(textSize);
+        image1.setImageDrawable(dateDrawable);
+
+        image2.setLayoutParams(new LayoutParams(width / 3 - 10, LayoutParams.WRAP_CONTENT));
+        image3.setLayoutParams(new LayoutParams(width / 3 - 10, LayoutParams.WRAP_CONTENT));
+        image2.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                showActivity(ForcastVideoDetailActivity.class);
+            }
+        });
+        image3.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                showActivity(ForcastVideoDetailActivity.class);
+            }
+        });
+
+        moviesPreAdapter = new MoviesPreAdapter(getActivity(), list_pre);
+        vedioPullToRefreshListView.addHeaderView(header);
+        vedioPullToRefreshListView.setAdapter(moviesPreAdapter);
+        vedioPullToRefreshListView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(PLA_AdapterView<?> parent, View view, int position, long id) {
+                // TODO Auto-generated method stub
+                showActivity(ForplayVideoViewActivity.class);
+            }
+        });
+
+        vedioPullToRefreshListView.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // TODO Auto-generated method stub
+                lazyLoad();
+            }
+
+        });
+
+        isPrepared = true;
+        lazyLoad();
+        startTimer();
+
+        return view;
+    }
+
+    private void startTimer() {
+        CountDownUtil countDownUtil = new CountDownUtil();
+
+        try {
+            long timeRemain = Math.abs(24 * 3600 * 1000);
+            final long start = -1;
+            final long end = timeRemain;
+
+            countDownUtil.setCountdown(start, end, new CountDownUtil.CountDownListener() {
+
+                @Override
+                public boolean finish(MyCountdownTimer timer, long endRemainTime, int what) {
+                    // TODO Auto-generated method stub
+                    dateDrawable.setHour("00");
+                    dateDrawable.setMinute("00");
+                    dateDrawable.setSecond("00");
+                    dateDrawable.invalidateSelf();
+                    return false;
+                }
+
+                @Override
+                public void changed(MyCountdownTimer timer, long millisUntilFinished, long[] hms, int what) {
+                    // TODO Auto-generated method stub
+                    try {
+
+                        String _hh = hms[0] + "";
+                        String _mm = hms[1] + "";
+                        String _ss = hms[2] + "";
+
+                        // hh.setText(_hh.length() <= 1 ? "0" + _hh : _hh);
+                        // mm.setText(_mm.length() <= 1 ? "0" + _mm : _mm);
+                        // ss.setText(_ss.length() <= 1 ? "0" + _ss : _ss);
+                        dateDrawable.setHour(_hh.length() <= 1 ? "0" + _hh : _hh);
+                        dateDrawable.setMinute(_mm.length() <= 1 ? "0" + _mm : _mm);
+                        dateDrawable.setSecond(_ss.length() <= 1 ? "0" + _ss : _ss);
+                        dateDrawable.invalidateSelf();
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initView() {
+
+    }
+
+    protected boolean isVisible;
+
+    /**
+     * 在这里实现Fragment数据的缓加载.
+     * 
+     * @param isVisibleToUser
+     */
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (getUserVisibleHint()) {
+            isVisible = true;
+            onVisible();
+        } else {
+            isVisible = false;
+            onInvisible();
+        }
+    }
+
+    protected void onVisible() {
+        lazyLoad();
+    }
+
+    @Override
+    protected void lazyLoad() {
+        // TODO Auto-generated method stub
+        Log.d(TAG, "the lazyload start");
+        /*
+         * if(!isPrepared || !isVisible) { return; }
+         */
+        Log.d(TAG, "the volley start");
+        tools = VolleyTools.getInstance(this.getContext());
+        tools.addToRequestQueue(new StringRequest(Method.GET, Constants.ServerConfig.HOME_URL, getMoviesListener), tools.VolleyTAG);
+    }
+
+    private Listener<String> getMoviesListener = new Listener<String>() {
+        private Object mQueue;
+        private ImageLoader mImageLoader;
+
+        @Override
+        public void onSuccess(String response) {
+            Log.d(TAG, "the response --> " + response);
+            vedioPullToRefreshListView.onRefreshComplete();
+            NewMoviesReturn moviesReturn = MJsonUtil.gson.fromJson(response, new TypeToken<NewMoviesReturn>() {
+            }.getType());
+            if (moviesReturn.getError_code() == 0) {
+                moviesReturn.getError_msg();
+                list_now = moviesReturn.getData().getList_now();
+                list_pre = moviesReturn.getData().getList_pre();
+                if (list_pre != null && list_pre.size() > 0) {
+                    Log.d(TAG, "The list pre size --> " + list_pre.size());
+                    moviesPreAdapter.context = LatestVedioFragment.this.getActivity();
+                    moviesPreAdapter.moviesList = list_pre;
+                    moviesPreAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(TAG, "The list pre is null");
+                }
+                
+                if (list_now != null && list_now.size() == 1) {
+                    ImageListener imageListener = ImageLoader.getImageListener(image2, R.drawable.video_image_02, R.drawable.video_image_02);
+                    VolleyRequestManager.getInstance().getImageLoader().get(list_now.get(0).getThumb(), imageListener);
+                }
+
+                if (list_now != null && list_now.size() > 1) {
+                    ImageListener imageListener = ImageLoader.getImageListener(image2, R.drawable.video_image_02, R.drawable.video_image_02);
+                    ImageListener imageListener2 = ImageLoader.getImageListener(image3, R.drawable.video_image_02, R.drawable.video_image_02);
+                    VolleyRequestManager.getInstance().getImageLoader().get(list_now.get(0).getThumb(), imageListener);
+                    VolleyRequestManager.getInstance().getImageLoader().get(list_now.get(1).getThumb(), imageListener2);
+                } else {
+                    Log.d(TAG, "The list now is null");
+                }
+            } else {
+                Log.d(TAG, "movies return error");
+            }
+        }
+
+        @Override
+        public void onError(VolleyError error) {
+            vedioPullToRefreshListView.onRefreshComplete();
+            super.onError(error);
+            Log.d(TAG, "the response --> " + error.toString());
+        }
+
+        @Override
+        public void onCancel() {
+            vedioPullToRefreshListView.onRefreshComplete();
+            super.onCancel();
+            Log.d(TAG, "cancelled");
+        }
+    };
+}

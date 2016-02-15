@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@color/top_bar_bg"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/iv_left"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:paddingLeft="10dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/arrow_left" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="标题"
+        android:textColor="#998b8b"
+        android:textSize="18sp" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:id="@+id/setting_icon" >
+        <ImageView
+            android:id="@+id/iv_right1"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/iv_right2"
+            android:paddingRight="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_history_clock"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/iv_right2"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/btn_right"
+            android:layout_alignParentRight="true"
+            android:paddingRight="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_person_avatar"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/btn_right"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:textColor="#998b8b"
+            android:paddingRight="10dp"
+            android:text="注册"
+            android:background="@color/top_bar_bg"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

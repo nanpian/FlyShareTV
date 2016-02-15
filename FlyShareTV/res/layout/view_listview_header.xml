@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginBottom="10dp"
+    android:background="@color/white"
+    android:orientation="horizontal"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp" >
+
+    <cn.fxdata.tv.view.widget.CountdownClock
+        android:id="@+id/count_down_clock"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_weight="1" />
+   
+    <com.zgntech.core.view.HorizontalListView
+        android:id="@+id/list_pre_view"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_weight="2"
+         />
+
+    <!--
+     	<ImageView
+		android:id="@+id/header_image2"
+		android:layout_width="0dp"
+		android:layout_height="60dp"
+		android:layout_weight="1"
+		android:layout_marginLeft="5dp"
+		android:layout_marginRight="5dp"
+		android:clickable="true"
+		android:scaleType="centerCrop"
+		android:background="@drawable/image_06" />
+
+	<ImageView
+		android:id="@+id/header_image3"
+		android:layout_width="0dp"
+		android:layout_height="60dp"
+		android:layout_weight="1"
+		android:clickable="true"
+		android:scaleType="centerCrop"
+		android:background="@drawable/image_07" />
+    -->
+
+</LinearLayout>

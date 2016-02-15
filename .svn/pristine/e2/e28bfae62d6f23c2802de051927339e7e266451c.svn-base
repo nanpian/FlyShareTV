@@ -1,0 +1,78 @@
+
+package cn.fxdata.tv.activity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.SimpleAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.view.SearchEditText;
+import cn.fxdata.tv.R;
+
+public class SearchResultActivity extends BaseActivity {
+
+    private ImageView backImageView;
+    private SearchEditText searchEditText;
+    private SimpleAdapter adapter;
+    private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private String searchKey;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.act_search_result);
+        backImageView = (ImageView) findViewById(R.id.image_back);
+        searchEditText = (SearchEditText) findViewById(R.id.edit_search);
+        Bundle bundle = getIntent().getExtras();
+        searchKey = bundle.getString("key");
+        searchEditText.setText(searchKey);
+
+        backImageView.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                finish();
+            }
+        });
+        
+        setup();
+    }
+    
+    private GridView mHistoryGridView = null;
+    private GridView mHotSearchGridView = null;
+    private void setupViews() {
+    	mHistoryGridView = (GridView) this.findViewById(R.id.hot_play_history_gv);
+    	mHotSearchGridView = (GridView) this.findViewById(R.id.hot_play_hot_search_gv);
+    }
+    private void setup() {
+    	setupViews();
+    	setupData();
+    }
+    
+    private void setupData() {
+        String[] historyArray = new String[] {
+            "����һҹ", "���ӵĻ���", "�٣���ͷ", 
+            "RunningMan", "Ϊ����ս", "���ܰɣ��ֵ�", 
+            "������ս", "���󻨵ĸ�������"
+        };
+        ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.row_textview, historyArray);
+        mHistoryGridView.setAdapter(adapter);
+        
+        String[] hotSearch = new String[] {
+        	"����è��", "���ܰɣ��ֵ�", "�٣���ͷ",
+        	"RunningMan", "�������Ӻ�"
+        };
+        adapter = new ArrayAdapter<String>(this, R.layout.row_textview, hotSearch);
+        mHotSearchGridView.setAdapter(adapter);
+    }
+}

@@ -1,0 +1,153 @@
+
+package cn.fxdata.tv.utils;
+
+import cn.fxdata.tv.bean.LoginInfoReturn.LoginInfo;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-18
+ * @version：V1.0
+ */
+public class SharedPreferencePersonUtil {
+
+    private static final String PREFERENCES_NAME = "fx_sp_person";
+    /** 用户信息 名字 */
+    public static final String PERSON_NAME = "person_nickname";
+    /** 用户密码 */
+    public static final String PERSON_PASSWORD = "pserson_password";
+    /** 用户信息 id */
+    public static final String PERSON_USERID = "person_userid";
+    /** 用户 角色 default,system */
+    public static final String PERSON_ROLE = "person_role";
+    /** 用户信息 头像 */
+    public static final String PERSON_USERAVATAR = "person_avatar";
+    /** 用户唯一code */
+    public static final String PERSON_PRIVATE_CODE = "person_private_code";
+   
+    /** 用户信息 手机号 */
+    public static final String PERSON_MOBILE = "person_mobile";
+
+    /**用户设置wifi下缓存视频    开关*/
+    public static final String PERSON_CACHE_SWITCH = "person_cache_switch";
+    
+    private SharedPreferences sp;
+    private Editor editor;
+
+    public SharedPreferencePersonUtil(Context context) {
+        sp = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        editor = sp.edit();
+    }
+
+    /** 姓名 */
+    public void setPersonName(String username) {
+        editor.putString(PERSON_NAME, username);
+        editor.commit();
+    }
+
+    public String getPersonName() {
+        return sp.getString(PERSON_NAME, "");
+    }
+    
+    /** 密码 */
+    public void setPersonPassword(String password) {
+        editor.putString(PERSON_PASSWORD, password);
+        editor.commit();
+    }
+
+    public String getPersonPassword() {
+        return sp.getString(PERSON_PASSWORD, "");
+    }
+
+    /** 用户角色 */
+    public void setPersonRole(String role) {
+        editor.putString(PERSON_ROLE, role);
+        editor.commit();
+    }
+
+    public String getPersonRole() {
+        return sp.getString(PERSON_ROLE, "");
+    }
+
+    /** 用户id */
+    public void setPersonUserId(String userid) {
+        editor.putString(PERSON_USERID, userid);
+        editor.commit();
+    }
+
+    public String getPersonUserId() {
+        return sp.getString(PERSON_USERID, "");
+    }
+
+    /** 用户头像 */
+    public void setPersonUserAvatar(String avatar) {
+        editor.putString(PERSON_USERAVATAR, avatar);
+        editor.commit();
+    }
+
+    public String getPersonUserAvatar() {
+        return sp.getString(PERSON_USERAVATAR, "");
+    }
+
+    /** 用户唯一码 */
+    public void setPersonUserPrivateCode(String code) {
+        editor.putString(PERSON_PRIVATE_CODE, code);
+        editor.commit();
+    }
+
+    public String getPersonUserPrivateCode() {
+        return sp.getString(PERSON_PRIVATE_CODE, "");
+    }
+
+    /** 手机号 */
+    public void setPersonMobile(String mobile) {
+        editor.putString(PERSON_MOBILE, mobile);
+        editor.commit();
+    }
+
+    public String getPersonMobile() {
+        return sp.getString(PERSON_MOBILE, "");
+    }
+  /*  *//** 设置wifi 下缓存视频 *//*
+    public void setPersonCacheSwitch(String cacheswitch){
+    	editor sp.getString(PERSON_CACHE_SWITCH, cacheswitch);
+    	editor.commit();
+    }
+    
+    public void getPersonCacheSwitch(){
+    	return sp.getString(PERSON_CACHE_SWITCH, "");
+    }*/
+    
+    /**
+     * 保存用户信息到配置文件
+     * 
+     * @param info
+     */
+    public void setLoginInfo(LoginInfo info) {
+		// TODO Auto-generated method stub
+		setPersonUserId(info.getUserInfo().getUser_id());
+		setPersonUserAvatar(info.getUserInfo().getAvatar());
+        setPersonMobile(info.getUserInfo().getMobile());
+        setPersonName(info.getUserInfo().getUsername());
+       // setPersonUserPrivateCode(info.getUserInfo().getPrivate_code());
+	}
+
+	
+
+    /**
+     * 退出登录 ，清除用户信息
+     */
+    public void clearUserInfo() {
+        setPersonPassword("");
+        setPersonUserId("");
+        setPersonName("");
+        setPersonUserAvatar("");
+        setPersonMobile("");
+        //setPersonUserPrivateCode("");
+    }
+
+	
+}

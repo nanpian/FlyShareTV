@@ -1,0 +1,50 @@
+package cn.fxdata.tv.cache;
+
+import android.text.TextUtils;
+
+/**
+ * 这个是一个工具类，用来获取图片缓存用的KEY
+ * <p>
+ */
+public final class ImageCache {
+    /**
+     * 头像前缀
+     */
+    private static final String KEY_IMAGE = "IMG";
+
+    /**
+     * 构�?函数
+     */
+    private ImageCache() {
+        //
+    }
+
+    /**
+     * 根据头像的URL地址，获取头像的索引
+     * 
+     * @param aUrl
+     *            URL
+     * @return 头像的索�?
+     */
+    public static String getLogoKey(String aUrl) {
+        return KEY_IMAGE + getImageKey(aUrl);
+    }
+
+    /**
+     * 根据图像的URL地址，获取图像的索引
+     * 
+     * @param aUrl
+     *            图像的URL地址
+     * @return 图像的索�?
+     */
+    public static String getImageKey(String aUrl) {
+        String result = "";
+
+        if (!TextUtils.isEmpty(aUrl)) {
+            // 直接用URL的HASH
+            result += aUrl.hashCode();
+        }
+
+        return result;
+    }
+}

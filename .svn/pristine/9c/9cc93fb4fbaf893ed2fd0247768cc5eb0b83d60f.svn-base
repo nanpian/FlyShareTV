@@ -1,0 +1,75 @@
+<RelativeLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="200dp">
+
+    <!-- 图片轮播 -->
+    <cn.fxdata.tv.view.HomeSlideShowPager
+        android:id="@+id/mHome_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" 
+        android:layout_gravity="center" >
+    </cn.fxdata.tv.view.HomeSlideShowPager>
+    <!-- 下面的标题栏和页面指示器 -->
+    <RelativeLayout
+        android:id="@+id/pager_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="30.0dip"
+        android:layout_alignBottom="@id/mHome_viewpager"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:background="#79000000"
+        android:gravity="center_vertical" >
+	    <!-- 页面的Indicator -->
+	    <RelativeLayout 
+	        android:id="@+id/pager_indicator"
+	        android:layout_width="100.0dip"
+	        android:layout_height="match_parent"
+	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentRight="true"
+	        android:layout_marginTop="5dp">
+	        <View 
+	            android:id="@+id/mHome_indicator_2"
+	            android:layout_width="5dp"
+	            android:layout_height="5dp"
+	            android:layout_centerVertical="true"
+	            android:layout_alignParentRight="true"
+	            android:background="@drawable/dra_dot_white"
+	            android:layout_marginLeft="5dp"
+	            android:layout_marginRight="5dp"
+	            />
+	        <View 
+	            android:id="@+id/mHome_indicator_1"
+	            android:layout_width="5dp"
+	            android:layout_height="5dp"
+	            android:layout_centerVertical="true"
+	            android:layout_toLeftOf="@id/mHome_indicator_2"
+	            android:background="@drawable/dra_dot_white"
+	            android:layout_marginLeft="5dp"
+	            />
+	        <View 
+	            android:id="@+id/mHome_indicator_0"
+	            android:layout_width="5dp"
+	            android:layout_height="5dp"
+	            android:layout_centerVertical="true"
+	            android:layout_toLeftOf="@id/mHome_indicator_1"
+	            android:background="@drawable/dra_dot_white"
+	            />
+	    </RelativeLayout>
+        <!-- 底部左边的文字 -->
+        <TextView
+            android:id="@+id/mHome_indicatortitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10.0dip"
+        	android:layout_toLeftOf="@id/pager_indicator"
+        	android:layout_centerVertical="true"
+            android:gravity="left"
+            android:singleLine="true"
+            android:text="TextView"
+            android:textColor="#ffffffff" 
+            android:visibility="gone"/>
+    </RelativeLayout>
+</RelativeLayout>

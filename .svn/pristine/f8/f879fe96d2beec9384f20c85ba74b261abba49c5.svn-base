@@ -1,0 +1,206 @@
+package cn.fxdata.tv.fragment.detail;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import com.android.volley.Listener;
+import com.android.volley.VolleyError;
+import com.android.volley.Request.Method;
+import com.android.volley.Response;
+import com.zgntech.core.util.UiTools;
+
+import com.zgntech.core.view.pullrefresh.PullToRefreshBase;
+import com.zgntech.core.view.pullrefresh.PullToRefreshBase.OnRefreshListener;
+import com.zgntech.core.view.pullrefresh.PullToRefreshListView;
+
+import cn.fxdata.tv.R;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
+import cn.fxdata.tv.adapter.CommentAdapter;
+import cn.fxdata.tv.base.BaseFragment;
+import cn.fxdata.tv.bean.MovieCommentsDataReturn;
+import cn.fxdata.tv.bean.MovieCommentsDataReturn.MovieComments;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.http.VolleyRequestManager;
+import cn.fxdata.tv.adapter.CommentAdapter;
+import com.android.volley.Response;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
+/**
+ * Video detail comments fragment in video detail activity.
+ */
+public class CommentFragment extends BaseFragment implements OnItemClickListener {
+
+    private CommentAdapter adapter;
+    private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    /** 电影评论数据 */
+    protected LinkedList<MovieComments> movieCommentsDatas = new LinkedList<MovieComments>();
+    private ListView commentListView;
+    private com.zgntech.core.view.pullrefresh.PullToRefreshListView pullToRefreshListView;
+    private ListView mListview;
+    private int page;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.frag_detail_comment, container, false);
+        // commentListView = (ListView)
+        // view.findViewById(R.id.video_detail_comment_listview);
+        pullToRefreshListView = (PullToRefreshListView) view.findViewById(R.id.person_comments_pulltorefreshlistview);
+        pullToRefreshListView.setPullLoadEnabled(false);
+        pullToRefreshListView.setScrollLoadEnabled(true);
+        // pullToRefreshListView.setPullRefreshEnabled(false);
+
+        mListview = pullToRefreshListView.getRefreshableView();
+        mListview.setFadingEdgeLength(0);
+        mListview.setDividerHeight(0);
+        mListview.setSelector(getResources().getDrawable(R.drawable.transparent));
+        mListview.setOnItemClickListener(this);
+
+        adapter = new CommentAdapter(this.getActivity(), data);
+        mListview.setAdapter(adapter);
+
+        pullToRefreshListView.setOnRefreshListener(new OnRefreshListener<ListView>() {
+            @Override
+            public void onPullDownToRefresh(PullToRefreshBase<ListView> refreshView) {
+                refreshCommentData();
+            }
+
+            @Override
+            public void onPullUpToRefresh(PullToRefreshBase<ListView> refreshView) {
+                loadMoreCommentData();
+            }
+        });
+        loadData();
+
+        // commentListView.setAdapter(adapter);
+        // UiTools.setListViewHeightBasedOnChildren(commentListView);
+        return view;
+    }
+
+    @Override
+    public void loadData() {
+        // TODO Auto-generated method stub
+        super.loadData();
+        if (isShouldLoadData()) {
+            setFirstLoad(true);
+            if (movieCommentsDatas != null)
+                movieCommentsDatas.clear();
+            pullToRefreshListView.doPullRefreshing(true, Constants.DEFAULT_VALUE.DEFAULT_LIST_LAOD_DELAYMILLIS);
+        }
+    }
+
+    /**
+     * 获取 电影评论数据
+     */
+    private void refreshCommentData() {
+        Map<String, String> param = new HashMap<String, String>();
+        param.put("user_id", getUserId());
+        sendVolleyRequest(param, new Listener<String>() {
+
+            @Override
+            public void onSuccess(String response) {
+                // TODO Auto-generated method stub
+                pullToRefreshListView.onPullDownRefreshComplete();
+                
+                try {
+                    MovieCommentsDataReturn personMessageListDataReturn2 = cn.fxdata.tv.utils.MJsonUtil.gson.fromJson(response, new TypeToken<MovieCommentsDataReturn>() {
+                    }.getType());
+                    if (personMessageListDataReturn2.getError_code() == 0) {
+                        personMessageListDataReturn2 = null;
+                    } else if (personMessageListDataReturn2.getError_code() == 20000){
+                        showToast(personMessageListDataReturn2.getError_msg());
+                    }
+                } catch (JsonSyntaxException e) {
+                    // TODO: handle exception
+                }
+            }
+
+            public void onError(VolleyError error) {
+
+            }
+        });
+    }
+
+    /**
+     * 加载 更多 好友话题评论 数据
+     */
+    private void loadMoreCommentData() {
+        Map<String, String> param = new HashMap<String, String>();
+        param.put("user_id", getUserId());
+        param.put("p", "" + (page + 1));
+        param.put("ac", "getUserData");
+        sendVolleyRequest(param, new Listener<String>() {
+
+            @Override
+            public void onSuccess(String response) {
+                // TODO Auto-generated method stub
+                pullToRefreshListView.onPullUpRefreshComplete();
+                
+                try {
+                    MovieCommentsDataReturn personCommentListDataReturn2 = cn.fxdata.tv.utils.MJsonUtil.gson.fromJson((String) response, new TypeToken<MovieCommentsDataReturn>() {
+                    }.getType());
+                    if (personCommentListDataReturn2.getError_code() == 0) {
+                        personCommentListDataReturn2 = null;
+                    }
+                } catch (JsonSyntaxException e) {
+                    // TODO: handle exception
+                }
+            }
+
+            public void onError(VolleyError error) {
+
+            }
+        });
+    }
+
+    /** volley相关 */
+    public void sendVolleyRequest(Map<String, String> params, Listener<String> listener) {
+        if (checkNet()) {
+            Map<String, String> reqParams = getReqParam(params);
+            com.zgntech.core.util.StringParamsRequest request = new com.zgntech.core.util.StringParamsRequest(Method.POST, Constants.ServerConfig.COMMENT_LIST_URL, listener, reqParams);
+            request.setRetryPolicy(getRetryPolicy());
+            VolleyRequestManager.getInstance().addRequest(request, this);
+        }
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onPause() {
+        // TODO Auto-generated method stub
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+        // TODO Auto-generated method stub
+
+    }
+
+}

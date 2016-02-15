@@ -1,0 +1,133 @@
+package cn.fxdata.tv.activity.user;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.base.BaseTitleBarActivity;
+import cn.fxdata.tv.bean.LoginInfoReturn;
+import cn.fxdata.tv.utils.Log;
+import cn.fxdata.tv.utils.StringUtils;
+
+import com.zgntech.core.listener.VolleyListener;
+import com.zgntech.core.listener.VolleyListener.VolleyJsonCallBack;
+
+public class UserInformationModfiyActivity extends BaseTitleBarActivity
+        implements OnClickListener {
+    private TextView t, tv_title;
+    private ImageView right2, back;
+    private FrameLayout f;
+    private Button submitmodfiypw;
+    private EditText oldpassword, newpassword, repassword;
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_modfiypw);
+        initView();
+    }
+
+    private void initView() {
+        tv_title = (TextView) findViewById(R.id.title);
+        tv_title.setText("修改密码");
+        right2 = (ImageView) findViewById(R.id.iv_right2);
+        right2.setVisibility(right2.GONE);
+        back = (ImageView) findViewById(R.id.iv_left);
+        back.setOnClickListener(this);
+        oldpassword = (EditText) findViewById(R.id.oldpassword);
+        newpassword = (EditText) findViewById(R.id.newpassword);
+        repassword = (EditText) findViewById(R.id.repassword);
+        submitmodfiypw = (Button) findViewById(R.id.submitmodfiypw);
+        submitmodfiypw.setOnClickListener(this);
+    }
+
+    private void Modifypw() {
+        String oldPassword = oldpassword.getText().toString();
+        String newPassword = newpassword.getText().toString();
+        String RePassword = repassword.getText().toString();
+        if (StringUtils.isNullOrEmpty(oldPassword)) {
+            return;
+        }
+        if (StringUtils.isNullOrEmpty(newPassword)) {
+            return;
+        }
+        if (newPassword.length() < 6) {
+            return;
+        }
+        if (StringUtils.equalsIgnoreCase(oldPassword, newPassword)) {
+            return;
+        }
+        if (!StringUtils.equalsIgnoreCase(newPassword, RePassword)) {
+            return;
+        }
+        loginWithMobile(oldPassword, newPassword);
+    }
+
+    /**
+     * 提交
+     * 
+     * @param user_id
+     * @param oldPassword
+     * @param newPassword
+     */
+    private void loginWithMobile(String oldPassword, String newPassword) {
+        Map<String, String> param = new HashMap<String, String>();
+        param.put("user_id", getUserId());
+        param.put("old_password", oldPassword);
+        param.put("password", newPassword);
+        param.put("ac", "updatePassword");
+        showDialog("正在提交...");
+        sendVolleyRequest(param, new VolleyListener(LoginInfoReturn.class,
+                new VolleyJsonCallBack() {
+                    @Override
+                    public void onResonpse(Object object) {
+                        dismissDialog();
+                        LoginInfoReturn loginInfoReturn = (LoginInfoReturn) object;
+                        ModfiySuccess(loginInfoReturn.getData());
+                        loginInfoReturn = null;
+
+                    }
+
+                    @Override
+                    public void onError(int errorCode, String errorMsg) {
+                        dismissDialog();
+                        showToast(errorMsg);
+                        /**
+                         * ???**** if (errorCode == 20000) {
+                         * showToast("输入有误，请重新输入" + errorMsg); } else if
+                         * (errorCode == 20002) { showToast("原密码不正确，请重新输入" +
+                         * errorMsg); } ???
+                         ****/
+                    }
+
+                }));
+    }
+
+    private void ModfiySuccess(LoginInfoReturn.LoginInfo info) {
+        Log.i(STORAGE_SERVICE, "修改成功，返回个人信息页面");
+        finish();
+    }
+
+    @Override
+    public void onClick(View v) {
+        // TODO Auto-generated method stub
+        switch (v.getId()) {
+        case R.id.iv_left:
+            finish();
+            break;
+        case R.id.submitmodfiypw:
+            Modifypw();
+            break;
+        default:
+            break;
+        }
+    }
+}

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp" >
+
+        <ImageView
+            android:id="@+id/videoThumb"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/avatar_default" />
+
+        <TextView
+            android:id="@+id/download_videoName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_toRightOf="@id/videoThumb"
+            android:text="指压板让人痛啊痛啊"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/videoFavDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/remove" />
+
+        <TextView
+            android:id="@+id/videoSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/videoThumb"
+            android:layout_toRightOf="@+id/videoThumb"
+            android:text="超清61MB"
+            android:textColor="#646464"
+            android:textSize="8sp" />
+
+        <SeekBar
+            android:id="@+id/download_seekbar"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/download_videoName"
+            android:layout_toLeftOf="@+id/videoFavDelete"
+            android:layout_toRightOf="@+id/videoThumb"
+            android:max="100"
+            android:maxHeight="2dp"
+            android:minHeight="2dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:progressDrawable="@drawable/seekbar_download_style"
+            android:thumb="@drawable/thumb_bar"
+            android:thumbOffset="2dip" />
+
+        <TextView
+            android:id="@+id/videoSize2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/videoSize"
+            android:layout_alignBottom="@+id/videoSize"
+            android:layout_toLeftOf="@+id/videoFavDelete"
+            android:text="289MB"
+            android:textColor="#646464"
+            android:textSize="8sp" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="#ec6c6c" />
+
+</LinearLayout>

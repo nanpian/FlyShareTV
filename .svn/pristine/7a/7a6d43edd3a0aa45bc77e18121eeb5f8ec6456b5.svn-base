@@ -1,0 +1,87 @@
+package cn.fxdata.tv.bean;
+
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+public class VersionReturn {
+	@Expose
+    @SerializedName("error_code")
+    private Integer error_code;
+    @Expose
+    @SerializedName("error_msg")
+    private String error_msg;
+    @Expose
+    private VersionData data;
+    
+    public Integer getError_code() {
+        return error_code;
+    }
+
+    public void setError_code(Integer error_code) {
+        this.error_code = error_code;
+    }
+
+    public String getError_msg() {
+        return error_msg;
+    }
+
+    public void setError_msg(String error_msg) {
+        this.error_msg = error_msg;
+    }
+    
+    public VersionData getData() {
+        return data;
+    }
+
+    public void setData(VersionData data) {
+        this.data = data;
+    }
+    
+    public static class VersionData {
+        @Expose
+        @SerializedName("code")
+        private String code;
+        @Expose
+        @SerializedName("version")
+        private String version;
+        @Expose
+        @SerializedName("info")
+        private String info;
+        @Expose
+        @SerializedName("url")
+        private String url;
+        
+        public String getCode() {
+        	return code;
+        }
+        
+        public void setCode(String code) {
+        	this.code = code;
+        }
+        
+        public String getVersion() {
+        	return version;
+        }
+        
+        public void setVersion (String version) {
+        	this.version = version;
+        }
+        
+        public String getInfo() {
+        	return info;
+        }
+        
+        public void setInfo(String info) {
+        	this.info = info;
+        }
+        
+        public String getUrl () {
+        	return url;
+        }
+        
+        public void setUrl (String url) {
+        	this.url = url;
+        }
+    }
+}

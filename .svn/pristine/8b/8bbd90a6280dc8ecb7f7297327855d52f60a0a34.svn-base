@@ -1,0 +1,477 @@
+package cn.fxdata.tv.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.activity.ForplayVideoViewActivity;
+import cn.fxdata.tv.activity.MoviePlayRecordsActivity;
+import cn.fxdata.tv.activity.OwnerMsgActivity;
+import cn.fxdata.tv.activity.SearchHistoryActivity;
+import cn.fxdata.tv.activity.SearchResultActivity;
+import cn.fxdata.tv.activity.SearchSchoolActivity;
+import cn.fxdata.tv.adapter.HotPlayMovieAdapter;
+import cn.fxdata.tv.base.BaseFragment;
+import cn.fxdata.tv.base.BaseTitleBarFragment;
+import cn.fxdata.tv.bean.HotPlayMoviesReturn;
+import cn.fxdata.tv.bean.HotPlayMoviesReturn.MoviesItem;
+import cn.fxdata.tv.bean.movie.Movie;
+import cn.fxdata.tv.bean.NewMoviesReturn;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.utils.MJsonUtil;
+import cn.fxdata.tv.utils.SettingsProvider;
+import cn.fxdata.tv.view.SearchEditText;
+import cn.fxdata.tv.view.widget.FXProgressBar;
+
+import com.android.volley.Listener;
+import com.android.volley.Request.Method;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyTools;
+import com.android.volley.request.StringRequest;
+import com.google.gson.reflect.TypeToken;
+import com.zgntech.core.util.UiTools;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-30
+ * @version：V1.0
+ */
+@SuppressLint("CutPasteId")
+public class HotPlayFragment extends BaseTitleBarFragment {
+
+    public static final String TAG = "HotPlayFragment";
+
+    private LinearLayout mVaiety;
+    private LinearLayout mDrama;
+    private LinearLayout mMovie;
+    private LinearLayout mAnime;
+
+    private List<Map<String, Object>> mDatas = new ArrayList<Map<String, Object>>();
+    private SimpleAdapter adapter;
+    private TextView schoolTextView;
+    private SearchEditText searchEditText;
+    private ImageView historyClock, personHeader;
+    private TextView shoolSelect;
+    // 连接错误或者没有网络的时候，需要隐藏主界面，展示连接错误的界面
+    private ImageView connectError;
+    // 链接错误或者没有网络的时候，需要隐藏主界面
+    private ScrollView scrollMainView;
+    // 请求网络的时候，需要展示旋转圈，旋转圈自定义
+    private FXProgressBar fxProgressBar;
+
+    /** 检索学校的请求Code */
+    private final static int REQUEST_CODE_FOR_SEARCH_SCHOOL = 1;
+    /** 检索学校返回的结果的学校名字和学校ID的extra量 */
+    public final static String SEARCH_SCHOOL_EXTRA_SCHOOL_NAME = "name";
+    public final static String SEARCH_SCHOOL_EXTRA_SCHOOL_SCHOOL_ID = "id";
+
+    // 电影
+    private ArrayList<MoviesItem> mMovieList = new ArrayList<MoviesItem>();
+    private HotPlayMovieAdapter mMovieAdapter;
+    // 动漫
+    private ArrayList<MoviesItem> mAnimeList = new ArrayList<MoviesItem>();
+    private HotPlayMovieAdapter mAnimeAdapter;
+    // 电视剧
+    private ArrayList<MoviesItem> mDramaList = new ArrayList<MoviesItem>();
+    private HotPlayMovieAdapter mDramaAdapter;
+    // 综艺
+    private ArrayList<MoviesItem> mVaietyList = new ArrayList<MoviesItem>();
+    private HotPlayMovieAdapter mVaietyAdapter;
+
+    // 懒加载使用
+    boolean isPrepared = false;
+    
+    private int[] images = new int[] { R.drawable.hot_image_01, R.drawable.hot_image_02, R.drawable.hot_image_03, R.drawable.hot_image_04, R.drawable.hot_image_01, R.drawable.hot_image_02,
+            R.drawable.hot_image_03, R.drawable.hot_image_04, R.drawable.hot_image_01, R.drawable.hot_image_02, R.drawable.hot_image_03, R.drawable.hot_image_04, R.drawable.hot_image_01,
+            R.drawable.hot_image_02, R.drawable.hot_image_03, R.drawable.hot_image_04 };
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        View view = inflater.inflate(R.layout.frag_main_hotplay_video, container, false);
+        // 热播主界面
+        scrollMainView = (ScrollView) view.findViewById(R.id.frag_hotplay_main_view);
+        // 网络连接错误图片，支持点击
+        connectError = (ImageView) view.findViewById(R.id.connect_error);
+        connectError.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // 点击重新刷新,重新请求
+                checkAndShowSchoolSearch();
+            }
+        });
+        // 网络连接时的转圈
+        fxProgressBar = (FXProgressBar)view.findViewById(R.id.frag_hotplay_progressBar);
+        
+
+        schoolTextView = (TextView) view.findViewById(R.id.textview_school);
+        searchEditText = (SearchEditText) view.findViewById(R.id.edit_search);
+        historyClock = (ImageView) view.findViewById(R.id.image_clock);
+        personHeader = (ImageView) view.findViewById(R.id.image_person);
+
+        shoolSelect = (TextView) view.findViewById(R.id.textview_school);
+        for (int i = 0; i < 12; i++) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("image", images[i]);
+            map.put("name", "快乐大本营");
+            map.put("description", "小kimi哭着喊着要妈妈");
+            mDatas.add(map);
+        }
+        searchEditText.setOnEditorActionListener(new OnEditorActionListener() {
+
+            @Override
+            public boolean onEditorAction(TextView arg0, int actionId, KeyEvent arg2) {
+                // TODO Auto-generated method stub
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("key", searchEditText.getText().toString());
+                    showActivity(SearchResultActivity.class, bundle);
+                    return true;
+                }
+                return false;
+            }
+        });
+        shoolSelect.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                showActivityForResult(SearchSchoolActivity.class, 1);
+            }
+        });
+        historyClock.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                showActivity(MoviePlayRecordsActivity.class);
+            }
+        });
+        mMovieAdapter = new HotPlayMovieAdapter(getActivity());
+        mAnimeAdapter = new HotPlayMovieAdapter(getActivity());
+        mDramaAdapter = new HotPlayMovieAdapter(getActivity());
+        mVaietyAdapter = new HotPlayMovieAdapter(getActivity());
+
+        // adapter = new SimpleAdapter(getActivity(), mDatas,
+        // R.layout.row_hot_video, new String[] {
+        // "image", "name", "description"
+        // }, new int[] {
+        // R.id.image, R.id.name, R.id.description
+        // });
+
+        initClassify(view);
+        ImageView owner = (ImageView) view.findViewById(R.id.image_person);
+        owner.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                startActivity(new Intent(getActivity(), OwnerMsgActivity.class));
+            }
+        });
+        
+        // 懒加载使用标记
+        isPrepared = true;
+        lazyLoad();
+        return view;
+    }
+
+    private View.OnClickListener mListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // TODO Auto-generated method stub
+            Integer index = (Integer) v.getTag();
+            Bundle bundle = new Bundle();
+            bundle.putInt("key", index);
+            showActivity(HotplayClassifyActivity.class, bundle);
+        }
+    };
+
+    /**
+     * 初始化简单的分组
+     */
+    private void initClassify(View root) {
+        mVaiety = (LinearLayout) root.findViewById(R.id.hotplay_variety);
+        initClassify(mVaiety, getResources().getString(R.string.fragment_1_variety), mListener, mVaietyAdapter);
+        mDrama = (LinearLayout) root.findViewById(R.id.hotplay_drama);
+        initClassify(mDrama, getResources().getString(R.string.fragment_2_drama), mListener, mDramaAdapter);
+        mMovie = (LinearLayout) root.findViewById(R.id.hotplay_movie);
+        initClassify(mMovie, getResources().getString(R.string.fragment_3_movie), mListener, mMovieAdapter);
+        mAnime = (LinearLayout) root.findViewById(R.id.hotplay_anime);
+        initClassify(mAnime, getResources().getString(R.string.fragment_4_anime), mListener, mAnimeAdapter);
+    }
+
+    public void startForplayVideoActivity(int movieId) {
+        VolleyTools tools = VolleyTools.getInstance(getActivity());
+        // 根据不同学校的Id返回
+        String requestUrl = Constants.ServerConfig.TODAY_MOVIE_URL + "&movie_id=" + movieId;
+        StringRequest hotRequest = new StringRequest(Method.GET, requestUrl, new Listener<String>() {
+            @Override
+            public void onSuccess(String response) {
+                Log.d(TAG, "data response --> " + response.toString());
+                Movie movie = MJsonUtil.gson.fromJson(response, new TypeToken<Movie>() {
+                }.getType());
+                if (movie.getErrorCode() == 0) {
+                    if (movie.getData() != null && movie.getData().getFilmUrl() != null) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString(Constants.MovieExtra.EXTRA_MOVIE_PATH, movie.getData().getFilmUrl());
+                        showActivity(ForplayVideoViewActivity.class, bundle);
+                    }
+                } else {
+                    Log.i(TAG, "ERROR CODE");
+                    showActivity(ForplayVideoViewActivity.class);
+                }
+
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                super.onError(error);
+                Log.d(TAG, "the response --> " + error.toString());
+                showActivity(ForplayVideoViewActivity.class);
+            }
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+                Log.d(TAG, "cancelled");
+                showActivity(ForplayVideoViewActivity.class);
+            }
+        });
+        tools.addToRequestQueue(hotRequest, tools.VolleyTAG);
+    }
+
+    private void initClassify(LinearLayout root, String title, View.OnClickListener listener, BaseAdapter adapter) {
+        TextView tvTitle = (TextView) root.findViewById(R.id.tv_item_name);
+        tvTitle.setText(title);
+
+        RelativeLayout rl = (RelativeLayout) root.findViewById(R.id.rl_hotplay_title);
+        rl.setTag(new Integer(HotplayClassifyActivity.getIntFromString(title, getResources())));
+        rl.setOnClickListener(listener);
+
+        ImageView ivMore = (ImageView) root.findViewById(R.id.iv_item_more);
+        ivMore.setTag(new Integer(HotplayClassifyActivity.getIntFromString(title, getResources())));
+        ivMore.setOnClickListener(listener);
+
+        GridView gv = (GridView) root.findViewById(R.id.gv_item_detail);
+        gv.setAdapter(adapter);
+        gv.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO Auto-generated method stub
+                // start the video detail fragment
+                final int movieId = (Integer) view.getTag(R.id.tag_movie_id);
+                Log.i("xixia", "movieId : " + movieId);
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... unused) {
+                        startForplayVideoActivity(movieId);
+                        return null;
+                    }
+                }.execute();
+            }
+        });
+
+        // UiTools.setGridViewHeightBasedOnChildren(gv);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO Auto-generated method stub
+        if (requestCode == REQUEST_CODE_FOR_SEARCH_SCHOOL) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    Bundle bundle = data.getExtras();
+                    String schoolName = bundle.getString(SEARCH_SCHOOL_EXTRA_SCHOOL_NAME);
+                    int schoolId = bundle.getInt(SEARCH_SCHOOL_EXTRA_SCHOOL_SCHOOL_ID);
+                    // shoolSelect.setText(school);
+                    SettingsProvider.putString(getActivity(), SettingsProvider.SETTINGS_HOT_PLAY_SCHOOL_NAME, schoolName);
+                    SettingsProvider.putInt(getActivity(), SettingsProvider.SETTINGS_HOT_PLAY_SCHOOL_ID, schoolId);
+                    updateCurrentSchool();
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onActivityCreated(savedInstanceState);
+        //checkAndShowSchoolSearch();
+    }
+
+    /**
+     * 如果是第一次启动,则要启学校搜索界面, 让用户选择学校
+     */
+    private void checkAndShowSchoolSearch() {
+
+        boolean isFirstEnter = SettingsProvider.getBooleanCustomDefault(getActivity(), SettingsProvider.SETTINGS_FIRST_ENTER_HOT_PLAY, true);
+        if (isFirstEnter) {
+            SettingsProvider.putBoolean(getActivity(), SettingsProvider.SETTINGS_FIRST_ENTER_HOT_PLAY, false);
+            // 要启动学校搜索界面
+            showActivityForResult(SearchSchoolActivity.class, REQUEST_CODE_FOR_SEARCH_SCHOOL);
+        }
+        updateCurrentSchool();
+    }
+
+    /**
+     * 更新用户选择的学校
+     */
+    private void updateCurrentSchool() {
+        String school = SettingsProvider.getStringCustomDefault(getActivity(), SettingsProvider.SETTINGS_HOT_PLAY_SCHOOL_NAME, "null");
+        if (!school.equals("null")) {
+            shoolSelect.setText(school);
+            int schoolId = SettingsProvider.getIntCustomDefault(getActivity(), SettingsProvider.SETTINGS_HOT_PLAY_SCHOOL_ID, 2);
+            loadData(schoolId);
+        }
+    }
+
+    private int mSchoolId = 2;
+    
+    @Override
+    protected void lazyLoad() {
+        //loadData(0);
+        if(!isPrepared || !isVisible) {
+            return;
+        }
+        checkAndShowSchoolSearch();
+    }
+
+    /**
+     * volley 数据请求
+     */
+    public void loadData(int schoolId) {
+
+        // clear data first
+        mDramaList.clear();
+        mMovieList.clear();
+        mVaietyList.clear();
+        mAnimeList.clear();
+        
+        //请求开始的时候,要加上转圈效果
+        scrollMainView.setVisibility(View.GONE);
+        fxProgressBar.setVisibility(View.VISIBLE);
+        connectError.setVisibility(View.GONE);
+
+        VolleyTools tools = VolleyTools.getInstance(getActivity());
+        // 根据不同学校的Id返回
+        String requestUrl = Constants.ServerConfig.HOT_PALY_URL + "&school_id=" + schoolId;
+        StringRequest hotRequest = new StringRequest(Method.GET, requestUrl, new Listener<String>() {
+
+            @Override
+            public void onSuccess(String response) {
+                fxProgressBar.setVisibility(View.GONE);
+                scrollMainView.setVisibility(View.VISIBLE);
+                connectError.setVisibility(View.GONE);
+                Log.d(TAG, "data response --> " + response.toString());
+                HotPlayMoviesReturn hotPlayMoviesReturn = MJsonUtil.gson.fromJson(response, new TypeToken<HotPlayMoviesReturn>() {
+                }.getType());
+                if (hotPlayMoviesReturn.getError_code() == 0) {
+                    int size = hotPlayMoviesReturn.getData().size();
+                    Log.i(TAG, "size is : " + size);
+                    // 如果返回的请求列表中下面四个分类都有数据的话
+                    // 自然会跟新当前分类下面的数据
+                    // 但是如果某个学校对应分类下没有数据
+                    // 则不会更新这个学校,但是假如前面的一个状态下的
+                    // 学校有数据的话,
+                    // 会保留原来的数据,
+                    // 因此需要清除原来的数据
+                    boolean hasUpdateAnime = false;
+                    boolean hasUpdateMovie = false;
+                    boolean hasUpdateDrama = false;
+                    boolean hasUpdateVaiety = false;
+                    for (int i = 0; i < size; i++) {
+                        ArrayList<MoviesItem> list = (ArrayList<MoviesItem>) hotPlayMoviesReturn.getData().get(i);
+                        MoviesItem item = list.get(0);
+                        if (TextUtils.isEmpty(item.getClasses())) {
+                            continue;
+                        }
+                        if (item.getClasses().equals("动漫")) {
+                            Log.i(TAG, "动漫 size is : " + list.size());
+                            mAnimeList.addAll(list.size() >= 4 ? list.subList(0, 4) : list);
+                            mAnimeAdapter.setDataAndNotify(mAnimeList);
+                            hasUpdateAnime = true;
+                        } else if (item.getClasses().equals("电影")) {
+                            Log.i(TAG, "电影 size is : " + list.size());
+                            mMovieList.addAll(list.size() >= 4 ? list.subList(0, 4) : list);
+                            mMovieAdapter.setDataAndNotify(mMovieList);
+                            hasUpdateMovie = true;
+                        } else if (item.getClasses().equals("电视剧")) {
+                            Log.i(TAG, "电视剧 size is : " + list.size());
+                            mDramaList.addAll(list.size() >= 4 ? list.subList(0, 4) : list);
+                            mDramaAdapter.setDataAndNotify(mDramaList);
+                            hasUpdateDrama = true;
+                        } else {
+                            Log.i(TAG, "综艺 size is : " + list.size());
+                            mVaietyList.addAll(list.size() >= 4 ? list.subList(0, 4) : list);
+                            mVaietyAdapter.setDataAndNotify(mVaietyList);
+                            hasUpdateVaiety = true;
+                        }
+                    }
+                    if(!hasUpdateAnime) {
+                    	mAnimeAdapter.setDataAndNotify(null);
+                    }
+                    if(!hasUpdateDrama) {
+                    	mDramaAdapter.setDataAndNotify(null);
+                    }
+                    if(!hasUpdateMovie) {
+                    	mMovieAdapter.setDataAndNotify(null);	
+                    }
+                    if(!hasUpdateVaiety) {
+                    	mVaietyAdapter.setDataAndNotify(null);
+                    }
+                } else {
+                    Log.i(TAG, "ERROR CODE");
+                }
+
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                super.onError(error);
+                Log.d(TAG, "the response --> " + error.toString());
+                fxProgressBar.setVisibility(View.GONE);
+                scrollMainView.setVisibility(View.GONE);
+                connectError.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+                Log.d(TAG, "cancelled");
+            }
+        });
+        tools.addToRequestQueue(hotRequest, tools.VolleyTAG);
+
+    }
+
+}

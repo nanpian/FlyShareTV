@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">zgntech</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <!-- Volley -->
+    <string name="http_error_msg_timeout">连接超时啦T-T</string>
+    <string name="http_error_msg_errorrequest">错误的请求!</string>
+    <string name="http_error_msg_nolink">服务器断开连接了T-T</string>
+
+    <!-- http -->
+    <string name="http_error">网络请求出错!</string>
+    <string name="network_unavailable">网络连接不可用，请检查网络</string>
+
+</resources>

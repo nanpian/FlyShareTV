@@ -1,0 +1,184 @@
+package cn.fxdata.tv.utils;
+
+
+import cn.fxdata.tv.bean.UserInfoReturn.UserInfo;
+import cn.fxdata.tv.constants.Constants;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+
+public class SharePreferencePersonUtil {
+
+    private static final String PREFERENCES_NAME = "huochaihe_sp_person";
+
+    /**用户信息  昵称*/
+    public static final String PERSON_NICKNAME = "person_nickname";
+    /**用户信息  登陆邮箱*/
+    public static final String PERSON_EMAIL = "person_email";
+    /**用户密码*/
+    public static final String PERSON_PASSWORD = "pserson_password";
+    /**登陆类型，0表示未登陆，1表示平台，2表示QQ， 3表示微博*/
+    public static final String PERSON_LOGINTYPE = "person_logintype";
+    /**三方登陆凭证*/
+    public static final String PERSON_OPENID = "person_openId";
+    /**用户信息  id*/
+    public static final String PERSON_USERID = "person_userid";
+    /**用户信息  头像*/
+    public static final String PERSON_USERAVATAR = "person_avatar";
+    /**用户唯一code*/
+    public static final String PERSON_PRIVATE_CODE = "person_private_code";
+    
+    /**用户信息 手机号*/
+    public static final String PERSON_MOBILE = "person_mobile";
+    /**用户信息 性别*/
+    public static final String PERSON_SEX = "person_sex";
+    /**用户信息 情感状态*/
+    public static final String PERSON_EMOTION = "person_emition";
+    /**用户信息 省份*/
+    public static final String PERSON_PROVINCE = "person_province";
+    /**用户信息 城市*/
+    public static final String PERSON_CITY = "person_city";
+    
+    private SharedPreferences sp;
+    private Editor editor;
+    
+    public SharePreferencePersonUtil(Context context) {
+        sp = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        editor = sp.edit();
+    }
+    /**昵称*/
+    public void setPersonNickName(String username) {
+        editor.putString(PERSON_NICKNAME, username);
+        editor.commit();
+    }
+    public String getPersonNickName() {
+        return sp.getString(PERSON_NICKNAME, "");
+    }
+    /**邮箱*/
+    public void setPersonEmail(String email) {
+        editor.putString(PERSON_EMAIL, email);
+        editor.commit();
+    }
+    public String getPersonEmail() {
+        return sp.getString(PERSON_EMAIL, "");
+    }
+    /**密码*/
+    public void setPersonPassword(String password) {
+        editor.putString(PERSON_PASSWORD, password);
+        editor.commit();
+    }
+    public String getPersonPassword() {
+        return sp.getString(PERSON_PASSWORD, "");
+    }
+    /**用户id*/
+    public void setPersonUsrId(String userid) {
+        editor.putString(PERSON_USERID, userid);
+        editor.commit();
+    }
+    public String getPersonUserId() {
+        return sp.getString(PERSON_USERID, "");
+    }
+    /**用户头像*/
+    public void setPersonUserAvatar(String avatar) {
+        editor.putString(PERSON_USERAVATAR, avatar);
+        editor.commit();
+    }
+    public String getPersonUserAvatar() {
+        return sp.getString(PERSON_USERAVATAR, "");
+    }
+    /**用户唯一码*/
+    public void setPersonUserPrivateCode(String code) {
+        editor.putString(PERSON_PRIVATE_CODE, code);
+        editor.commit();
+    }
+    public String getPersonUserPrivateCode() {
+        return sp.getString(PERSON_PRIVATE_CODE, "");
+    }
+    
+    /**登陆类型*/
+    public void setPersonLoginType(int type) {
+        editor.putInt(PERSON_LOGINTYPE, type);
+        editor.commit();
+    }
+    public int getPersonLoginType() {
+        return sp.getInt(PERSON_LOGINTYPE, Constants.PersonLoginType.LOGIN_TYPE_NOLOGIN);
+    }
+    
+    /**手机号*/
+    public void setPersonMobile(String mobile) {
+        editor.putString(PERSON_MOBILE, mobile);
+        editor.commit();
+    }
+    public String getPersonMobile() {
+        return sp.getString(PERSON_MOBILE, "");
+    }
+    
+    /**性别*/
+    public void setPersonSex(String sex) {
+        editor.putString(PERSON_SEX, sex);
+        editor.commit();
+    }
+    public String getPersonSex() {
+        return sp.getString(PERSON_SEX, "");
+    }
+    
+    /**情感状态*/
+    public void setPersonEmotion(String emotion) {
+        editor.putString(PERSON_EMOTION, emotion);
+        editor.commit();
+    }
+    public String getPersonEmotion() {
+        return sp.getString(PERSON_EMOTION, "");
+    }
+    
+    /**省份*/
+    public void setPersonProvince(String province) {
+        editor.putString(PERSON_PROVINCE, province);
+        editor.commit();
+    }
+    public String getPersonProvince() {
+        return sp.getString(PERSON_PROVINCE, "");
+    }
+    
+    /**城市*/
+    public void setPersonCity(String city) {
+        editor.putString(PERSON_CITY, city);
+        editor.commit();
+    }
+    public String getPersonCity() {
+        return sp.getString(PERSON_CITY, "");
+    }
+    /**
+     * 保存用户信息到配置文件
+     * @param info
+     */
+    public void setUserInfo(UserInfo info) {
+        setPersonUsrId(info.getUser_id());
+        setPersonNickName(info.getUsername());
+        setPersonUserAvatar(info.getAvatar());
+        setPersonEmail(info.getEmail());
+        setPersonEmotion(info.getEmotion());
+        setPersonCity(info.getCity());
+        setPersonProvince(info.getProvince());
+        setPersonMobile(info.getMobile());
+        setPersonSex(info.getSex());
+    }
+    /**
+     * 退出登录 ，清除用户信息
+     */
+    public void clearUserInfo() {
+        setPersonLoginType(Constants.PersonLoginType.LOGIN_TYPE_NOLOGIN);
+        setPersonPassword(null);
+        
+        setPersonUsrId(null);
+        setPersonNickName(null);
+        setPersonUserAvatar(null);
+        setPersonEmail(null);
+        setPersonEmotion(null);
+        setPersonCity(null);
+        setPersonProvince(null);
+        setPersonMobile(null);
+        setPersonSex(null);
+    }
+}
+

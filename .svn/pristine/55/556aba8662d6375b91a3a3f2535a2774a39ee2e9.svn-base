@@ -1,0 +1,383 @@
+package cn.fxdata.tv.utils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import org.json.JSONObject;
+
+import cn.fxdata.tv.cache.ImageCache;
+
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
+import android.provider.MediaStore.Images;
+import android.text.TextUtils;
+import android.util.Log;
+
+public class FileUtil {
+
+    public static final String TAG = "FileUtil";
+
+    public static FileUtil instances;
+
+    /** 图片质量，100表示最高 */
+    private static final int BITMAP_QUALITY = 95;
+
+    /**
+     * 单例定义FileUtil
+     * 
+     * @return
+     */
+    public static FileUtil getInstances() {
+        if (instances == null) {
+            instances = new FileUtil();
+        }
+        return instances;
+    }
+
+    /**
+     * 获取文件夹大�?
+     * 
+     * @param file
+     *            File实例
+     * @return long 单位为M
+     * @throws Exception
+     */
+    public long getFolderSize(java.io.File file) throws Exception {
+        long size = 0;
+        java.io.File[] fileList = file.listFiles();
+        for (int i = 0; i < fileList.length; i++) {
+            if (fileList[i].isDirectory()) {
+                size = size + getFolderSize(fileList[i]);
+            } else {
+                size = size + fileList[i].length();
+            }
+        }
+        return size;// / 1048576;
+    }
+
+    /**
+     * 删除指定目录下文件及目录
+     * 
+     * @param deleteThisPath
+     * @param filepath
+     * @return
+     */
+    public void deleteFolderFile(String filePath, boolean deleteThisPath)
+            throws IOException {
+        if (!TextUtils.isEmpty(filePath)) {
+            File file = new File(filePath);
+
+            if (file.isDirectory()) {// 处理目录
+                File files[] = file.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    deleteFolderFile(files[i].getAbsolutePath(), true);
+                }
+            }
+            if (deleteThisPath) {
+                if (!file.isDirectory()) {// 如果是文件，删除
+                    file.delete();
+                } else {// 目录
+                    if (file.listFiles().length == 0) {// 目录下没有文件或者目录，删除
+                        file.delete();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     *
+     */
+    public void deleteFile(File file) {
+
+        if (file.exists()) { // 判断文件是否存在
+            if (file.isFile()) { // 判断是否是文�?
+                file.delete(); // delete()方法 你应该知�?是删除的意�?;
+            } else if (file.isDirectory()) { // 否则如果它是�?��目录
+                File files[] = file.listFiles(); // 声明目录下所有的文件 files[];
+                for (int i = 0; i < files.length; i++) { // 遍历目录下所有的文件
+                    this.deleteFile(files[i]); // 把每个文�?用这个方法进行迭�?
+                }
+            }
+            file.delete();
+        } else {
+            //
+        }
+    }
+
+    /**
+     * 解析json，获取value�?
+     * 
+     * @param jsonObject
+     * @param name
+     * @return
+     */
+    public String getJsonValue(JSONObject jsonObject, String name) {
+        try {
+            return jsonObject.getString(name);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private static Object object = new Object();
+
+    /**
+     * 判断文件是否存在，若存在则删除
+     * 
+     * @param url
+     * @return
+     */
+    public static void checkFileExist(String url) {
+        synchronized (object) {
+            File file = null;
+
+            // 先到SD卡下�?
+            if (MemoryStatus.externalMemoryAvailable()) {
+                file = new File(ImageUtil.SAVE_SD_FLODER
+                        + ImageCache.getLogoKey(url));
+
+                // SD下找不到,到内存中�?
+                if (null == file || !file.exists()) {
+                    file = new File(ImageUtil.SAVE_PHOTO_FLODER
+                            + ImageCache.getLogoKey(url));
+                }
+
+                if (file.isFile() && file.exists()) {
+                    // return true;
+                    file.delete();
+                }
+            }
+            // return false;
+        }
+    }
+
+    /**
+     * 获取文件存储目录
+     * 
+     * @return 文件路径
+     */
+    public static String getStorePath() {
+        if (MemoryStatus.externalMemoryAvailable()) {
+            return ImageUtil.SAVE_SD_FLODER;
+        } else {
+            return ImageUtil.SAVE_PHOTO_FLODER;
+        }
+    }
+
+    /**
+     * 通过提供的文件名在默认路径下生成文件
+     * 
+     * @param filePath
+     *            文件路径
+     * @param isNextPath
+     *            暂时未使�?
+     * @return 生成的文�?
+     * @throws IOException
+     */
+    public static File createFile(String filePath, boolean isNextPath) {
+        synchronized (object) {
+            if (TextUtils.isEmpty(filePath)) {
+                Log.e(TAG, "in method createFile, filePath is null");
+                return null;
+            }
+            File file = createFolder(filePath);
+            try {
+                file.createNewFile();
+            } catch (Exception e) {
+                Log.e(TAG, "create file fail, filePath = " + filePath);
+            }
+            return file;
+        }
+    }
+
+    /** 将图片存入SD卡中的MatchBox/HuoChaiHe文件夹下 **/
+    public static String saveBitmapToSDcard(Context context, Bitmap bm,
+            String url) {
+        if (bm == null || TextUtils.isEmpty(url)) {
+            return null;
+        }
+
+        String filename = convertUrlToFileName(url);
+        // if (isBitmapExist(filename)) {
+        // return "isExist";
+        // }
+
+        File file = new File(FileUtil.getFolderSave() + filename);
+        try {
+            file.createNewFile();
+            OutputStream outStream = new FileOutputStream(file);
+            bm.compress(Bitmap.CompressFormat.JPEG, BITMAP_QUALITY, outStream);
+            outStream.flush();
+            outStream.close();
+        } catch (FileNotFoundException e) {
+            Log.w(TAG, "FileNotFoundException");
+        } catch (IOException e) {
+            Log.w(TAG, "IOException");
+        }
+
+        ContentValues values = new ContentValues(7);
+        values.put(Images.Media.TITLE, filename);
+        values.put(Images.Media.TITLE, filename);
+        values.put(Images.Media.DISPLAY_NAME, file.getAbsolutePath());
+        values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        values.put(Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(Images.Media.DATA, file.getAbsolutePath());
+        ContentResolver contentResolver = context.getContentResolver();
+        contentResolver.insert(Images.Media.EXTERNAL_CONTENT_URI, values);
+        return file.getAbsolutePath();
+    }
+
+    /**
+     * 图片是否存在
+     * 
+     * @param url
+     * @return
+     */
+    private static boolean isBitmapExist(String name) {
+        String path = ImageUtil.SAVE_SD_PHOTO + name;
+        File file = new File(path);
+        return file.exists();
+    }
+
+    /** 将url转成文件名 **/
+    private static String convertUrlToFileName(String url) {
+        return url.substring(url.lastIndexOf("/"), url.length());
+    }
+
+    /**
+     * 如果存在文件先删除，然后创建
+     * 
+     * @param filePath
+     *            文件路径
+     * @return 文件对象
+     */
+    private static File createFolder(String filePath) {
+        String folderPath = filePath.substring(0, filePath.lastIndexOf("/"));
+        File folder = getFileByPath(folderPath);
+        folder.mkdirs();
+        File file = getFileByPath(filePath);
+
+        if (file.exists()) {
+            file.delete();
+        }
+        return file;
+    }
+
+    /**
+     * 根据文件路径创建文件
+     * 
+     * @param filePath
+     *            文件路径
+     * @return 文件对象
+     */
+    public static File getFileByPath(String filePath) {
+        filePath = filePath.replaceAll("\\\\", "/");
+        boolean isSdcard = false;
+        int subIndex = 0;
+        if (filePath.indexOf("/sdcard") == 0) {
+            isSdcard = true;
+            subIndex = 7;
+        } else if (filePath.indexOf("/mnt/sdcard") == 0) {
+            isSdcard = true;
+            subIndex = 11;
+        }
+
+        if (isSdcard) {
+            if (isExistSdcard()) {
+                // 获取SDCard目录,2.2的时候为:/mnt/sdcard
+                // 2.1的时候为�?sdcard，所以使用静态方法得到路径会好一点�?
+                File sdCardDir = Environment.getExternalStorageDirectory();
+                String fileName = filePath.substring(subIndex);
+                return new File(sdCardDir, fileName);
+            } else if (isEmulator()) {
+                File sdCardDir = Environment.getExternalStorageDirectory();
+                String fileName = filePath.substring(subIndex);
+                return new File(sdCardDir, fileName);
+            }
+            return null;
+        } else {
+            return new File(filePath);
+        }
+    }
+
+    public static boolean isExistSdcard() {
+        if (!isEmulator()) {
+            return Environment.getExternalStorageState().equals(
+                    Environment.MEDIA_MOUNTED);
+        }
+        return true;
+    }
+
+    /**
+     * 创建图片保存文件夹，并返回地址
+     * 
+     * @return
+     */
+    public static String getFolderSave() {
+        if (StringUtils.isNullOrEmpty(ImageUtil.SAVE_SD_PHOTO) == false) {
+            File file = new File(ImageUtil.SAVE_SD_PHOTO.substring(0,
+                    ImageUtil.SAVE_SD_PHOTO.length() - 1));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+        }
+        return ImageUtil.SAVE_SD_PHOTO;
+    }
+
+    /**
+     * 创建图片临时存放文件夹，并返回地址
+     * 
+     * @return 临时图片存放地址
+     */
+    public static String getFolderTemp() {
+        if (StringUtils.isNullOrEmpty(ImageUtil.SAVE_SD_PHOTO_TEMP) == false) {
+            File file = new File(ImageUtil.SAVE_SD_PHOTO_TEMP.substring(0,
+                    ImageUtil.SAVE_SD_PHOTO_TEMP.length() - 1));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+        }
+        return ImageUtil.SAVE_SD_PHOTO_TEMP;
+    }
+
+    /**
+     * 创建图片缓存文件夹，并返回地址
+     * 
+     * @return 缓存图片存放地址
+     */
+    public static String getFolderCache() {
+        if (StringUtils.isNullOrEmpty(ImageUtil.SAVE_SD_FLODER) == false) {
+            File file = new File(ImageUtil.SAVE_SD_FLODER.substring(0,
+                    ImageUtil.SAVE_SD_FLODER.length() - 1));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+        }
+        return ImageUtil.SAVE_SD_FLODER;
+    }
+
+    public static void isExistAndCreateFolder(String path) {
+        if (path == null || path.equals(""))
+            return;
+        File file = new File(path);
+        if (!file.exists())
+            file.mkdirs();
+    }
+
+    private static boolean isEmulator() {
+        return android.os.Build.MODEL.equals("sdk");
+    }
+
+    public static boolean externalMemoryAvailable() {
+        return Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED);
+    }
+}

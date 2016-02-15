@@ -1,0 +1,148 @@
+package cn.fxdata.tv.adapter;
+
+import java.util.ArrayList;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.bean.FlyShareTVdataHelper;
+import cn.fxdata.tv.bean.VideoItem;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class FavAdapter extends BaseAdapter {
+	private Context mContext;
+	private ArrayList<VideoItem> mItems = new ArrayList<VideoItem>();
+	//private ViewHolder viewHolder;
+	private FlyShareTVdataHelper dbHelper;
+	private ViewHolder viewHolder;
+	
+	public FavAdapter(Context context) {
+		mContext = context;
+		//mItems = item;
+		Log.d("renjun1","pathadapter oncreat");
+		dbHelper = new FlyShareTVdataHelper(mContext,"FlyShareTV.db3", null, 1);
+		//dbHelper = new FlyShareTVdataHelper(mContext,"FlyShareTV.db3", null, 1);
+		initFavdata();
+	}
+
+	private void initFavdata() {
+		// TODO Auto-generated method stub
+		Log.d("renjun1","124323423423424234");
+		Cursor mCursor = null;
+		SQLiteDatabase db =null;
+		try {
+			db = dbHelper.getWritableDatabase();
+			mCursor = db.query("play_history", new String[] {"_id,_uri,_name,_fav"},
+	    			null, null,null,null,null);
+			mCursor.moveToFirst();
+			while(!mCursor.isAfterLast()){
+				Log.d("renjun1","aaaaaaaaaaaaaaa");
+				VideoItem vItem = new VideoItem();
+				vItem.setVideoUri(mCursor.getString(mCursor.getColumnIndex("_uri")));
+				vItem.setfileName(mCursor.getString(mCursor.getColumnIndex("_name")));
+				if (mCursor.getInt(mCursor.getColumnIndex("_fav")) == 1) {
+					vItem.setFavVideo(true);
+					mItems.add(vItem);
+				} else {
+					vItem.setFavVideo(false);
+				}
+				Log.d("renjun1",mCursor.getString(mCursor.getColumnIndex("_uri")));
+				//Log.d("renjun1",mCursor.getString(mCursor.getColumnIndex("_name")))
+				mCursor.moveToNext();
+			}
+
+		} finally {
+			if (mCursor != null) {
+				mCursor.close();
+			}
+			if (db!=null) {
+				db.close();
+			}
+		}
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return mItems.size();
+	}
+
+	@Override
+	public Object getItem(int arg0) {
+		// TODO Auto-generated method stub
+		return mItems.get(arg0);
+	}
+
+	@Override
+	public long getItemId(int arg0) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public View getView(int position, View contentView, ViewGroup arg2) {
+		// TODO Auto-generated method stub
+		final VideoItem vitem = mItems.get(position);
+		final String itemName = vitem.getfileName();
+		final boolean itemFav = vitem.isFavVideo();
+		//Log.d("renjun1","itemTiem:"+itemTiem+"itemName: "+itemName);
+		viewHolder = new ViewHolder();
+        if (contentView == null) {
+        	contentView = LayoutInflater.from(mContext).inflate(R.layout.fav_item,null);
+        }
+            viewHolder.pathcontent = (TextView)contentView.findViewById(R.id.fav_content);
+            viewHolder.pathdelete = (ImageView)contentView.findViewById(R.id.fav_delte);
+            viewHolder.pathcontent.setText(itemName);
+            viewHolder.pathdelete.setOnClickListener(new View.OnClickListener() {
+    			
+    			@Override
+    			public void onClick(View arg0) {
+    				// TODO Auto-generated method stub
+    				deleteFavfromSQL(vitem);
+    				mItems.remove(vitem);
+    				notifyDataSetChanged();
+    			}
+    		});
+		return contentView;
+	}
+	
+	protected void deleteFavfromSQL(VideoItem vitem) {
+		// TODO Auto-generated method stub
+		String videouri = vitem.getVideoUri();
+    	Cursor mCursor = null;
+    	SQLiteDatabase db = null;
+    	try {
+    		Log.d("renjun1","111111111");
+    		//SQLiteDatabase db = dbHelper.getWritableDatabase();
+    		db = dbHelper.getWritableDatabase();
+    		mCursor = db.query("play_history", new String[] {"_id,_uri,_fav"},
+        			"_uri=?",new String[]{videouri}, null,null,null);
+    		ContentValues values = new ContentValues();
+            values.put("_fav", 0);
+            Log.d("renjun1","delete");
+            dbHelper.update(values,videouri);
+    	}finally {
+    		if (mCursor!= null) {
+    			mCursor.close();
+    		}
+    		if (db!=null) {
+    			db.close();
+    		}
+    	}
+	}
+
+	private class ViewHolder {
+		private TextView pathdata;
+		private TextView pathcontent;
+		private ImageView pathdelete;
+	}
+
+}

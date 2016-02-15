@@ -1,0 +1,70 @@
+package cn.fxdata.tv.view.widget;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import android.app.Activity;
+import android.content.Context;
+import android.os.CountDownTimer;
+import android.util.AttributeSet;
+import android.widget.TextView;
+
+public class CountdownClock extends TextView {
+	
+	private static long COUNT_DOWN_INTERVAL = 1000L;
+	
+	private CountdownClockListener mListener;
+	private final CountdownClock mThisView;
+	private final Context mContext;
+	private final SimpleDateFormat mSdf= new SimpleDateFormat("HH:mm:ss");
+	
+	public CountdownClock(Context context) {
+		super(context);
+		mThisView = this;
+		mContext = context;
+	}
+	public CountdownClock(Context context, AttributeSet attrs){
+		super(context, attrs);
+		mThisView = this;
+		mContext = context;
+	}
+	public CountdownClock(Context context, AttributeSet attrs, int defStyleAttr){
+		super(context, attrs, defStyleAttr);
+		mThisView = this;
+		mContext = context;
+	}
+	
+	public void Start(final Object key, long time){
+		mThisView.setText(mSdf.format(new Date(time)));
+		mThisView.setTag(key);
+		 new CountDownTimer(time, COUNT_DOWN_INTERVAL) {
+
+		     public void onTick(final long millisUntilFinished) {
+		    	 ((Activity)mContext).runOnUiThread(new Runnable(){
+					@Override
+					public void run() {
+						 mThisView.setText(mSdf.format(new Date(millisUntilFinished)));						
+					}
+		    		 
+		    	 });
+		    	
+		     }
+
+		     public void onFinish() {
+		    	 if(mListener != null){
+		    		 mListener.onFinish(mThisView.getTag());
+		    	 }
+		         
+		     }
+		  }.start();
+	}
+	
+	public void setClockListener(CountdownClockListener l){
+		this.mListener = l;
+	}
+}
+
+interface CountdownClockListener{
+	void onFinish(Object Key);
+}
+

@@ -1,0 +1,301 @@
+package cn.fxdata.tv.base;
+
+import cn.fxdata.tv.view.SearchEditText;
+import cn.fxdata.tv.view.SearchEditText.SearchClickListener;
+import cn.fxdata.tv.R;
+import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
+import android.widget.TextView;
+
+/**
+ * @description :TODO<请描述这个类是干什么的>
+ * @author: lyu
+ * @date:2015-4-22
+ * @version:V1.0
+ */
+public class BaseTitleBarActivity extends BaseActivity {
+
+    protected RelativeLayout titleBarContent;
+    /** 中间文字标题 */
+    private static final String TAG_TITLE_MIDDLE = "view_title_middle";
+    /** 中间搜索框 */
+    private static final String TAG_SEARCH_MIDDLE = "view_search_middle";
+    /** 右边按键--tag */
+    private static final String TAG_IMG_RIGHT = "view_right";
+    /** 左边按键--tag */
+    private static final String TAG_IMG_LEFT = "view_left";
+    /** 右边进度�?-tag */
+    private static final String TAG_PROGRESSBAR_RIGHT = "view_progressbar_left";
+    /** 子Activity的Layout */
+    public FrameLayout layoutContent;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.fragment_base_titlebar);
+
+        titleBarContent = (RelativeLayout) findViewById(R.id.fragment_titlebar);
+        layoutContent = (FrameLayout) findViewById(R.id.fragment_titlebar_content);
+        setTitleBarBack();
+    }
+
+    /** 设置标题背景 */
+    protected void setTitleBarBack() {
+        titleBarContent.setBackgroundColor(getResources().getColor(
+                R.color.top_bar_bg));
+    }
+
+    /** 设置内容区域，resId为要添加至BaseActivity空白区域的Layout Id */
+    public void setContentLayout(int resId) {
+        // TODO Auto-generated method stub
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(resId, null);
+        if (layoutContent != null) {
+            layoutContent.addView(view);
+        }
+    }
+
+    /** ---------------------中间文字标题--------- **/
+    public TextView getTitleText() {
+        View view = titleBarContent.findViewWithTag(TAG_TITLE_MIDDLE);
+        if (view != null) {
+            if (view instanceof TextView)
+                return (TextView) view;
+        }
+        if (view != null)
+            titleBarContent.removeView(view);
+        TextView textView = new TextView(getContext());
+        LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        params.setMargins(
+                getResources().getDimensionPixelSize(
+                        R.dimen.homepage_titlebar_margin_hor),
+                0,
+                getResources().getDimensionPixelSize(
+                        R.dimen.homepage_titlebar_margin_hor), 0);
+
+        textView.setTag(TAG_TITLE_MIDDLE);
+        textView.setTextColor(getResources().getColor(R.color.white));
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
+                .getDimension(R.dimen.text_size_medium));
+        textView.setSingleLine(true);
+        titleBarContent.addView(textView, params);
+
+        return textView;
+    }
+
+    /** 设置文字标题 */
+    public void setTitleText(String title) {
+        getTitleText().setText(title);
+    }
+
+    /** ---------------------中间搜索框-------- **/
+    public TextView getMiddleSearch() {
+        View view = titleBarContent.findViewWithTag(TAG_SEARCH_MIDDLE);
+        if (view != null) {
+            if (view instanceof TextView)
+                return (TextView) view;
+        }
+        if (view != null)
+            titleBarContent.removeView(view);
+        SearchEditText searchView = new SearchEditText(getContext());
+        LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        params.setMargins(
+                getResources().getDimensionPixelSize(
+                        R.dimen.homepage_titlebar_margin_hor),
+                0,
+                getResources().getDimensionPixelSize(
+                        R.dimen.homepage_titlebar_margin_hor), 0);
+        searchView.setTag(TAG_SEARCH_MIDDLE);
+        searchView.setBackgroundResource(R.drawable.hotplay_search_bar_bg);
+        searchView.setCompoundDrawables(
+                getResources().getDrawable(R.drawable.icon_search), null, null,
+                null);
+        searchView.setGravity(Gravity.CENTER_VERTICAL);
+        searchView.setTextColor(getResources().getColor(
+                R.color.top_bar_text_color));
+        searchView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
+                .getDimension(R.dimen.text_size_medium));
+        searchView.setSingleLine(true);
+        searchView.setSearchClickListener(new SearchClickListener() {
+
+            @Override
+            public void onSearchClick() {
+                // TODO Auto-generated method stub
+                onSearchClick();
+            }
+        });
+        titleBarContent.addView(searchView, params);
+
+        return searchView;
+    }
+
+    protected void onSearchClick() {
+
+    }
+
+    /** 设置搜索框 */
+    public void setMiddleSearchText(String hint) {
+        getMiddleSearch().setHint(hint);
+    }
+
+    /** -----------------------右边图片按钮--------- **/
+    /** 添加右边图片 */
+    public void addRightImageView(int id) {
+        getRightImageView().setImageResource(id);
+    }
+
+    /** 设置右边图片资源 */
+    public void setRightImageView(int id) {
+        getRightImageView().setImageResource(id);
+    }
+
+    /** 得到右边图片按钮 */
+    public ImageView getRightImageView() {
+        ImageView imageView = (ImageView) titleBarContent
+                .findViewWithTag(TAG_IMG_RIGHT);
+        if (imageView == null) {
+            imageView = new ImageView(getContext());
+            LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT,
+                    RelativeLayout.TRUE);
+            params.setMargins(
+                    getResources().getDimensionPixelSize(
+                            R.dimen.homepage_titlebar_margin),
+                    0,
+                    0,
+                    getResources().getDimensionPixelSize(
+                            R.dimen.homepage_titlebar_margin));
+
+            imageView.setAdjustViewBounds(true);
+            imageView.setTag(TAG_IMG_RIGHT);
+
+            imageView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO Auto-generated method stub
+                    onRightClick();
+                }
+            });
+            titleBarContent.addView(imageView, params);
+        }
+
+        return imageView;
+    }
+
+    /**
+     * 设置右边图片按钮点击事件
+     */
+    protected void onRightClick() {
+    }
+
+    /** -----------------------右边文字按钮--------- **/
+    /** 添加右边文字按钮 */
+    public void addRightTextView(String text) {
+        getRightTextView().setText(text);
+    }
+
+    /** 设置右边文字按钮 */
+    public void setRightTextView(String text) {
+        getRightTextView().setText(text);
+    }
+
+    /** 得到右边文字按钮 */
+    public TextView getRightTextView() {
+        TextView textView = (TextView) titleBarContent
+                .findViewWithTag(TAG_IMG_RIGHT);
+
+        if (textView == null) {
+            textView = new TextView(getContext());
+            LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT,
+                    RelativeLayout.TRUE);
+            params.setMargins(
+                    0,
+                    0,
+                    0,
+                    getResources().getDimensionPixelSize(
+                            R.dimen.homepage_titlebar_margin));
+
+            textView.setTag(TAG_IMG_RIGHT);
+            textView.setTextColor(getResources().getColor(R.color.white));
+            textView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO Auto-generated method stub
+                    onRightClick();
+                }
+            });
+            titleBarContent.addView(textView, params);
+        }
+        return textView;
+    }
+
+    /** ----------------------------左边图片按钮--------- **/
+    /** 添加左边图片背景 */
+    public void addLeftImageView(int id) {
+        getLeftImageView().setImageResource(id);
+    }
+
+    /** 设置左边图片背景 */
+    public void setLeftImageView(int id) {
+        getLeftImageView().setImageResource(id);
+    }
+
+    /** 得到左边图片按钮 */
+    private ImageView getLeftImageView() {
+        ImageView imageView = (ImageView) titleBarContent
+                .findViewWithTag(TAG_IMG_LEFT);
+        if (imageView == null) {
+            imageView = new ImageView(getContext());
+            LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.MATCH_PARENT);
+            params.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
+            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT,
+                    RelativeLayout.TRUE);
+            params.setMargins(
+                    0,
+                    0,
+                    0,
+                    getResources().getDimensionPixelSize(
+                            R.dimen.homepage_titlebar_margin));
+
+            imageView.setAdjustViewBounds(true);
+            imageView.setTag(TAG_IMG_LEFT);
+            imageView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onLeftClick();
+                }
+            });
+
+            titleBarContent.addView(imageView, params);
+        }
+
+        return imageView;
+    }
+
+    /**
+     * 设置Back按钮点击事件
+     */
+    protected void onLeftClick() {
+
+    }
+}

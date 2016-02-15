@@ -1,0 +1,256 @@
+
+package cn.fxdata.tv.activity;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Message;
+import android.text.TextUtils;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.db.SQLiteHelper;
+import cn.fxdata.tv.db.SearchUtils;
+import cn.fxdata.tv.utils.Log;
+import cn.fxdata.tv.view.CustomDialog;
+import cn.fxdata.tv.view.SearchEditText;
+
+public class SearchResultActivity extends BaseActivity implements OnClickListener {
+
+    private static final String TAG = "SearchResultActivity";
+    private ImageView backImageView;
+    private SearchEditText searchEditText;
+    private SimpleAdapter adapter;
+    private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private String searchKey;
+    private ImageView mImgSearchView;
+    private GridView mHistoryGridView = null;
+    private GridView mHotSearchGridView = null;
+    private TextView mTvSearchDel;
+    private LinearLayout mSearchHistoryLayout;
+    private ArrayList<String> mSearchHistory;
+    private static final int REFRESH_SEARCH_DATA = 1;
+    private ArrayAdapter mSearchHisAdapter;
+
+    private android.os.Handler mUpdateHandler = new android.os.Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case REFRESH_SEARCH_DATA:
+                    updateSearchList();
+                    break;
+                default:
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.act_search_result);
+        backImageView = (ImageView) findViewById(R.id.image_back);
+        mImgSearchView = (ImageView) findViewById(R.id.image_down_back);
+        mImgSearchView.setBackgroundResource(R.drawable.arrow_down_left);
+        mImgSearchView.setOnClickListener(this);
+        mTvSearchDel = (TextView) findViewById(R.id.search_del_history);
+        mTvSearchDel.setOnClickListener(this);
+        mSearchHistoryLayout = (LinearLayout) findViewById(R.id.search_history);
+        searchEditText = (SearchEditText) findViewById(R.id.edit_search);
+        Bundle bundle = getIntent().getExtras();
+        searchKey = bundle.getString("key");
+        searchEditText.setText(searchKey);
+        backImageView.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                finish();
+            }
+        });
+
+        setup();
+        initData();
+    }
+
+
+    public void initData() {
+        if (mSearchHistory == null) {
+            mSearchHistory = new ArrayList<String>();
+        }
+        updateSearchList();
+        mSearchHisAdapter = new ArrayAdapter<String>(this, R.layout.row_textview, mSearchHistory);
+        mHistoryGridView.setAdapter(mSearchHisAdapter);
+        mHistoryGridView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+
+            }
+        });
+    }
+
+    private void setupViews() {
+        mHistoryGridView = (GridView) this.findViewById(R.id.hot_play_history_gv);
+        mHotSearchGridView = (GridView) this.findViewById(R.id.hot_play_hot_search_gv);
+    }
+
+    private void setup() {
+        setupViews();
+        setupData();
+    }
+
+    private void setupData() {
+//        String[] historyArray = new String[] {
+//            "两天一夜", "妻子的谎言", "嘿，老头",
+//            "RunningMan", "为她而战", "奔跑吧！兄弟",
+//            "无限挑战", "王大花的革命生涯"
+//        };
+//\\        ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.row_textview, historyArray);
+//        mHistoryGridView.setAdapter(adapter);
+//        mHistoryGridView.setOnItemClickListener(new OnItemClickListener() {
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, View view,
+//					int position, long id) {
+//
+//			}
+//		});
+
+//        String[] hotSearch = new String[] {
+//        	"虎妈猫爸", "奔跑吧！兄弟", "嘿，老头",
+//        	"RunningMan", "真正的男子汉"
+//        };
+//        adapter = new ArrayAdapter<String>(this, R.layout.row_textview, hotSearch);
+//        mHotSearchGridView.setAdapter(adapter);
+//        mHotSearchGridView.setOnItemClickListener(new OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view,
+//                                    int position, long id) {
+//
+//            }
+//        });
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.image_down_back:
+                startSearch();
+                break;
+            case R.id.search_del_history:
+                delSearchHistory();
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void startSearch() {
+        String name = searchEditText.getText().toString();
+        if (!TextUtils.isEmpty(name)) {
+            int number = SearchUtils.getInstance(this).getNumberByName(name);
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日HH:mm:ss");
+            Date curDate = new Date(System.currentTimeMillis());//获取当前时间
+            String curTime = formatter.format(curDate);
+            if (number == -1) {
+                //没有任何数据
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(SQLiteHelper.SEARCH_NAME, name);
+                contentValues.put(SQLiteHelper.SEARCH_NUMBER, 1);
+                //当前时间
+                contentValues.put(SQLiteHelper.SEARCH_TIME, curTime);
+                SearchUtils.getInstance(this).insertSearchHis(contentValues);
+            } else {
+                //有数据在里面
+                number = number + 1;
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(SQLiteHelper.SEARCH_NAME, name);
+                contentValues.put(SQLiteHelper.SEARCH_NUMBER, number);
+                //当前时间
+                contentValues.put(SQLiteHelper.SEARCH_TIME, curTime);
+                String selection = SQLiteHelper.SEARCH_NAME + " = ?";
+                String[] selectionArgs = new String[]{name};
+                SearchUtils.getInstance(this).updateSearchHis(contentValues, selection, selectionArgs);
+            }
+
+            //更新搜索数据列表
+            mUpdateHandler.obtainMessage(REFRESH_SEARCH_DATA).sendToTarget();
+            //增加网络搜索
+        }
+    }
+
+    public void delSearchHistory() {
+        final CustomDialog dialog = new CustomDialog(getContext(), "童鞋，确定要删除记录吗", "确定", "取消");
+        dialog.setOnButtonClickListener(new CustomDialog.OnButonClickListener() {
+
+            @Override
+            public void onLeftButtonClick() {
+                if (dialog != null && dialog.isShowing()) {
+                    //删除数据，隐藏view
+                    if (mSearchHistory != null){
+                        mSearchHistory.clear();
+                        SearchUtils.getInstance(SearchResultActivity.this).deleteSearchHis(null, null);
+                        mSearchHisAdapter.notifyDataSetChanged();
+                    }
+
+                    mSearchHistoryLayout.setVisibility(View.GONE);
+                    mTvSearchDel.setVisibility(View.GONE);
+                    dialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onRightButtonClick() {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    public void updateSearchList(){
+        if (mSearchHistoryLayout.getVisibility() == View.GONE){
+            mSearchHistoryLayout.setVisibility(View.VISIBLE);
+            mTvSearchDel.setVisibility(View.VISIBLE);
+        }
+        String orderBy = SQLiteHelper.SEARCH_TIME + " DESC";
+        String[] columns = new String[]{SQLiteHelper.SEARCH_NAME, SQLiteHelper.SEARCH_TIME};
+        Cursor cursor = SearchUtils.getInstance(this).querySearchHis(columns, null, null, null, null, orderBy, Integer.toString(9));
+        Log.i(TAG, "count is : " + cursor.getCount());
+        if (cursor != null && cursor.getCount() > 0){
+            if (mSearchHistory != null){
+                mSearchHistory.clear();
+//                cursor.moveToFirst();
+                //会少一条？
+//                while (cursor.moveToNext()){
+//                    mSearchHistory.add(cursor.getString(cursor.getColumnIndex(SQLiteHelper.SEARCH_NAME)));
+//                }
+                for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+                    mSearchHistory.add(cursor.getString(cursor.getColumnIndex(SQLiteHelper.SEARCH_NAME)));
+                }
+                Log.i(TAG, "mSearchHistory size is : " + mSearchHistory.size());
+            }
+            if (mSearchHisAdapter != null){
+                mSearchHisAdapter.notifyDataSetChanged();
+            }
+        }
+        if (cursor != null){
+            cursor.close();
+        }
+    }
+}

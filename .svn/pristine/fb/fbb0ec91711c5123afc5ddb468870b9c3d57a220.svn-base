@@ -1,0 +1,166 @@
+package cn.fxdata.tv.bean;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import cn.fxdata.tv.R;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.widget.ProgressBar;
+import android.widget.RemoteViews;
+import android.widget.Toast;
+
+public class DownloadVideoManager {
+	private String mSavePath;
+	private String mRemotePath;
+	private static final int DOWNLOAD = 1;
+	/* 下载结束 */
+	private static final int DOWNLOAD_FINISH = 2;
+	private static final int DOWNLOAD_FAIL = 3;
+	private Context mContext;
+	private Notification mNotification;
+	private NotificationManager mNotificationManager;
+	private ProgressBar mProgress;
+	
+	public void setRemotePath(String path){
+		
+		this.mRemotePath = path;
+		Log.d("renjun1","mRemotePath: "+mRemotePath);
+	}
+	
+	public DownloadVideoManager (Context context) {
+		Log.d("renjun1","downloader open22222");
+		mContext = context;
+		mNotificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE); 
+	}
+	
+	public void startDownload() {
+		new downloadApkThread().start();
+	}
+	
+	private Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			// 正在下载
+			case DOWNLOAD:
+				// 设置进度条位置
+				//mProgress.setProgress(mDownLoadProgress);
+				Log.d("renjun1","toast 111 begin");
+				//setMsgNotification();
+				break;
+			case DOWNLOAD_FINISH:
+				// 安装文件
+				Log.d("renjun1","下载完成 22222222");
+				Toast.makeText(mContext, "下载完成", Toast.LENGTH_LONG);
+				break;
+			//case DOWNLOAD_FAIL:
+			//	showLinkErrorDialog();
+			//	break;
+			default:
+				break;
+			}
+		};
+	};
+	private class downloadApkThread extends Thread {
+		@Override
+		public void run() {
+			try {
+				// 判断SD卡是否存在，并且是否具有读写权限
+				if (Environment.getExternalStorageState().equals(
+						Environment.MEDIA_MOUNTED)) {
+					// 获得存储卡的路径
+					String sdpath = Environment.getExternalStorageDirectory()
+							+ "/";
+					mSavePath = sdpath + "download";
+					URL url = new URL(mRemotePath);
+					// 创建连接
+					HttpURLConnection conn = (HttpURLConnection) url
+							.openConnection();
+					conn.connect();
+					Log.d("renjun1","conn.getResponseCode():"+conn.getResponseCode());
+					if (conn.getResponseCode() == 404 ) {
+						mHandler.sendEmptyMessage(DOWNLOAD_FAIL);
+					} else {
+					// 获取文件大小
+					int length = conn.getContentLength();
+					Log.d("renjun1","length: "+length);
+					// 创建输入流
+					InputStream is = conn.getInputStream();
+
+					File file = new File(mSavePath);
+					// 判断文件目录是否存在
+					if (!file.exists()) {
+						file.mkdir();
+					}
+					File videoFile = new File(mSavePath,"aa.mp4");
+					FileOutputStream fos = new FileOutputStream(videoFile);
+					int count = 0;
+					// 缓存
+					byte buf[] = new byte[1024];
+					// 写入到文件中
+					do {
+						int numread = is.read(buf);
+						count += numread;
+						// 计算进度条位置
+						//mDownLoadProgress = (int) (((float) count / length) * 100);
+						// 更新进度
+						mHandler.sendEmptyMessage(DOWNLOAD);
+						if (numread <= 0) {
+							// 下载完成
+							mHandler.sendEmptyMessage(DOWNLOAD_FINISH);
+							break;
+						}
+						// 写入文件
+						fos.write(buf, 0, numread);
+					} while (true);// 点击取消就停止下载.
+					fos.close();
+					is.close();
+					}
+				}
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			// 取消下载对话框显示
+			//mDownloadDialog.dismiss();
+		}
+	};
+	
+	 private void setMsgNotification() { 
+	        int icon = R.drawable.vedio_download_bg; 
+	        CharSequence tickerText = ""; 
+	        long when = System.currentTimeMillis(); 
+	        mNotification = new Notification(icon, tickerText, when); 
+	 
+	        // 放置在"正在运行"栏目中 
+	        mNotification.flags = Notification.FLAG_ONGOING_EVENT; 
+	 
+	        RemoteViews contentView = new RemoteViews(mContext.getPackageName(), 
+	                R.layout.download_notify);
+	        
+	        
+	        contentView.setTextViewText(R.id.download_file, mRemotePath); 
+	        contentView.setProgressBar(R.id.download_progress, 100, 0, false);
+	        // 指定个性化视图 
+	        mNotification.contentView = contentView; 
+	 
+	        //Intent intent = new Intent(this, FriendListActivity.class); 
+	        //PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, 
+	        //        intent, PendingIntent.FLAG_UPDATE_CURRENT); 
+	        // 指定内容意图 
+	        //mNotification.contentIntent = contentIntent; 
+	        mNotificationManager.notify(1, mNotification); 
+	    } 
+}

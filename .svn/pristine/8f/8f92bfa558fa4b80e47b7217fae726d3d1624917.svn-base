@@ -1,0 +1,71 @@
+package cn.fxdata.tv.fragment;
+
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.activity.ForplayVideoViewActivity;
+import cn.fxdata.tv.adapter.PathAdapter;
+import cn.fxdata.tv.base.BaseFragment;
+import cn.fxdata.tv.bean.FlyShareTVdataHelper;
+import cn.fxdata.tv.bean.VideoItem;
+import cn.fxdata.tv.constants.Constants;
+
+
+/**
+ * Created by Jianyong on 15/6/12.
+ */
+public class OwnerMsgPathFragment extends BaseFragment {
+	private ListView mListView;
+	private PathAdapter mPathAdapter;
+	private FlyShareTVdataHelper dbHelper;
+    private String videoUri;
+    private ArrayList<VideoItem> mItem = new ArrayList<VideoItem> ();
+    
+    
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final View view  = inflater.inflate(R.layout.owner_msg_path_fragment, container, false);
+        mListView = (ListView)view.findViewById(R.id.path_list);
+        mPathAdapter = new PathAdapter(getActivity());
+        mListView.setOnItemClickListener(mListListener);
+        mListView.setAdapter(mPathAdapter);
+    	return view;
+    }
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
+    	super.onCreate(savedInstanceState);
+    	Log.d("renjun1","path oncreat");
+    	
+    	//initVideItem();
+    }
+    
+    private OnItemClickListener mListListener = new OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        	final Context context = view.getContext();
+            final VideoItem video = (VideoItem) parent.getItemAtPosition(position);
+            Bundle mBundle = new Bundle();
+            mBundle.putString(Constants.MovieExtra.EXTRA_MOVIE_PATH, video.getVideoUri());
+            showActivity(ForplayVideoViewActivity.class,mBundle);
+        }
+    };
+	
+    
+}
+
+

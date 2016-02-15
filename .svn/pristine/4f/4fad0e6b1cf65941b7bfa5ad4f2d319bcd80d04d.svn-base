@@ -1,0 +1,199 @@
+package cn.fxdata.tv.activity;
+
+import android.annotation.SuppressLint;
+import android.app.Fragment;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.Toast;
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.base.BaseTitleBarFragment;
+import cn.fxdata.tv.bean.VersionReturn;
+import cn.fxdata.tv.fragment.FollowMeFragment;
+import cn.fxdata.tv.fragment.HotPlayFragment;
+import cn.fxdata.tv.fragment.LatestVedioFragment;
+import cn.fxdata.tv.utils.Log;
+import cn.fxdata.tv.utils.LoginUserInfo;
+import cn.fxdata.tv.utils.RadioViewGroup;
+import cn.fxdata.tv.utils.SharedPreferencePersonUtil;
+import cn.fxdata.tv.utils.ToastUtils;
+
+import com.zgntech.core.manager.UIFragmentManager;
+import com.zgntech.core.util.SystemTool;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-30
+ * @version：V1.0
+ */
+public class MainFragmentActivity extends BaseActivity implements OnClickListener {
+
+    private static final String TAG = "MainFrameActivity";
+    private ViewPager mPager;
+    private UIFragmentManager fragmentManager;
+    private RadioViewGroup rvg;
+
+    private Button latestBtn, hotPlayBtn, followmeBtn;
+    private boolean isPerson;
+    private static boolean isExit = false; 
+    
+    private static Handler mHandler = new Handler() { 
+        
+        @Override 
+        public void handleMessage(Message msg) { 
+            super.handleMessage(msg); 
+            isExit = false; 
+        } 
+    }; 
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.act_main_fragment);
+        initView();
+        //initFragment();
+    }
+
+    /**
+     * 初始化view
+     */
+    @SuppressLint("NewApi")
+    private void initView() {
+        mPager = (ViewPager) findViewById(R.id.fl_content);
+        mPager.setAdapter(new FxPagerAdapter(getSupportFragmentManager()));
+        mPager.setOnPageChangeListener(new PageChangeListener());
+        mPager.setOffscreenPageLimit(3);
+        latestBtn = (Button) findViewById(R.id.btn_latest);
+        hotPlayBtn = (Button) findViewById(R.id.btn_hotplay);
+        followmeBtn = (Button) findViewById(R.id.btn_followme);
+        latestBtn.setOnClickListener(this);
+        hotPlayBtn.setOnClickListener(this);
+        followmeBtn.setOnClickListener(this);
+        
+        rvg = new RadioViewGroup(this, false);
+        rvg.selected(latestBtn);
+    }
+
+/*    *//**
+     * 初始化fragment
+     *//*
+    private void initFragment() {
+        fragmentManager = new UIFragmentManager(this, R.id.fl_content, getSupportFragmentManager());
+        fragmentManager.put("lastest", new LatestVedioFragment());
+        fragmentManager.put("hotplay", new HotPlayFragment());
+        fragmentManager.put("followme", new FollowMeFragment());
+        fragmentManager.show("lastest");
+
+    }*/
+    
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+    
+    private void exit() { 
+        if (!isExit) { 
+            isExit = true; 
+            ToastUtils.ToastAdd(getContext(), "再按一次后退键退出飞享TV");
+            // 利用handler延迟发送更改状态信息 
+            mHandler.sendEmptyMessageDelayed(0, 2000); 
+        } else { 
+            Log.d(TAG, "exit application"); 
+            this.finish(); 
+        } 
+    } 
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+        case R.id.btn_latest:
+            mPager.setCurrentItem(0);
+            break;
+        case R.id.btn_hotplay:
+            mPager.setCurrentItem(1);
+            break;
+        case R.id.btn_followme:
+            mPager.setCurrentItem(2);
+            break;
+        default:
+            break;
+        }
+        rvg.selected(v);
+    }
+
+    private class PageChangeListener implements OnPageChangeListener {
+
+        @Override
+        public void onPageSelected(int position) {
+            switch (position) {
+            case 0:
+                rvg.selected(latestBtn);
+                break;
+            case 1:
+                rvg.selected(hotPlayBtn);
+                break;
+            case 2:
+                rvg.selected(followmeBtn);
+                break;
+            }
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int arg0) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void onPageScrolled(int arg0, float arg1, int arg2) {
+            // TODO Auto-generated method stub
+
+        }
+    }
+    
+
+    private class FxPagerAdapter extends FragmentPagerAdapter {
+        public FxPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public android.support.v4.app.Fragment getItem(int position) {
+            android.support.v4.app.Fragment frag = new android.support.v4.app.Fragment();
+            switch (position) {
+            case 0:
+                frag = new LatestVedioFragment();
+                break;
+            case 1:
+                frag = new HotPlayFragment();
+                break;
+            case 2:
+                frag = new FollowMeFragment();
+                break;
+            default:
+                break;
+            }
+            return frag;
+        }
+
+        @Override
+        public int getCount() {
+            return 3;
+        }
+    }
+}

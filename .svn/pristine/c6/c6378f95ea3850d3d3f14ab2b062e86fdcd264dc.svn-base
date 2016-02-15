@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent" >
+
+    <!-- 这个布局决定了标签在上面还是在下面显示 -->
+    <!--
+         <FrameLayout
+        android:id="@+id/fl_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/homepage_bottom_bar_height" />
+    -->
+
+    <cn.fxdata.tv.view.NoScrollViewPager
+        android:id="@+id/fl_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/homepage_bottom_bar_height"
+        android:background="@color/transparent" />
+
+    <LinearLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/homepage_bottom_bar_height"
+        android:layout_gravity="bottom"
+        android:background="@color/top_bar_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/btn_latest"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/transparent"
+            android:drawableTop="@drawable/main_lastest_selector"
+            android:paddingBottom="5dip"
+            android:paddingTop="7dip"
+            android:scaleType="matrix"
+            android:text="超清速递"
+            android:textColor="@color/bottom_bar_text_color"
+            android:textSize="@dimen/text_size_mediumall" />
+
+        <Button
+            android:id="@+id/btn_hotplay"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/transparent"
+            android:drawableTop="@drawable/main_hot_selector"
+            android:paddingBottom="5dip"
+            android:paddingTop="7dip"
+            android:scaleType="matrix"
+            android:text="校内热播"
+            android:textColor="@color/bottom_bar_text_color"
+            android:textSize="@dimen/text_size_mediumall" />
+
+        <Button
+            android:id="@+id/btn_followme"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/transparent"
+            android:drawableTop="@drawable/main_followme_selector"
+            android:paddingBottom="5dip"
+            android:paddingTop="7dip"
+            android:scaleType="matrix"
+            android:text="来追我"
+            android:textColor="@color/bottom_bar_text_color"
+            android:textSize="@dimen/text_size_mediumall" />
+    </LinearLayout>
+
+</FrameLayout>

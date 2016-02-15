@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:select="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#aa808080"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/arrow_left" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/video_play_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <RelativeLayout
+            android:id="@+id/video_play_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <SurfaceView
+                android:id="@+id/video_surfaceview"
+                android:layout_width="match_parent"
+                android:layout_height="140dp" >
+            </SurfaceView>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/video_surfaceview"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#aa808080"
+                    android:orientation="horizontal"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="5dp" >
+
+                    <ImageView
+                        android:id="@+id/playVideoBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/music_playbtn" />
+
+                    <SeekBar
+                        android:id="@+id/skbProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_weight="1.0"
+                        android:max="100"
+                        android:paddingLeft="20dip"
+                        android:paddingRight="20dip"
+                        android:progressDrawable="@drawable/seekbar_style"
+                        android:thumb="@drawable/thumb_bar" >
+                    </SeekBar>
+
+                    <ImageView
+                        android:id="@+id/video_fullscreen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/video_fullscreen" />
+                </LinearLayout>
+            </LinearLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/video_down_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/video_play_view" >
+
+            <RelativeLayout
+                android:id="@+id/video_detail_layout"
+                android:layout_width="match_parent"
+                android:layout_height="40dp" >
+
+                <ImageView
+                    android:id="@+id/image_free"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="7dp"
+                    android:src="@drawable/icon_free" >
+                </ImageView>
+
+                <cn.fxdata.tv.view.StateImageView
+                    android:id="@+id/image_notice"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignTop="@+id/image_share"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@+id/image_download"
+                    select:state_off="@drawable/vedio_followme_normal"
+                    select:state_on="@drawable/vedio_followme_pressed" />
+
+                <ImageView
+                    android:id="@+id/image_download"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignTop="@+id/image_share"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@+id/image_fav"
+                    android:src="@drawable/vedio_download_bg" />
+
+                <cn.fxdata.tv.view.StateImageView
+                    android:id="@+id/image_fav"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignTop="@+id/image_share"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@+id/image_share"
+                    select:state_off="@drawable/vedio_fav_normal"
+                    select:state_on="@drawable/vedio_fav_pressed" />
+
+                <ImageView
+                    android:id="@+id/image_share"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="7dp"
+                    android:src="@drawable/vedio_share_bg" />
+            </RelativeLayout>
+
+            <View
+                android:id="@+id/video_detail_line"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_below="@id/video_detail_layout"
+                android:background="@color/fengge_line_color" />
+
+            <cn.fxdata.tv.view.widget.FlowRadioGroup
+                android:id="@+id/video_detail_radiogroup"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_below="@id/video_detail_line"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:weightSum="3" >
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1" >
+
+                    <RadioButton
+                        android:id="@+id/video_detail_comment"
+                        style="@style/MainTabRadioButtonStyle"
+                        android:text="评论" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="1" >
+
+                    <RadioButton
+                        android:id="@+id/video_detail_channel"
+                        style="@style/MainTabRadioButtonStyle"
+                        android:text="选集" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="1" >
+
+                    <RadioButton
+                        android:id="@+id/video_detail_description"
+                        style="@style/MainTabRadioButtonStyle"
+                        android:text="详情" />
+                </FrameLayout>
+            </cn.fxdata.tv.view.widget.FlowRadioGroup>
+
+            <View
+                android:id="@+id/video_detail_line2"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_below="@id/video_detail_radiogroup"
+                android:background="@color/fengge_line_color" />
+
+            <FrameLayout
+                android:id="@+id/video_detail_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/video_detail_line2" >
+            </FrameLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+
+</FrameLayout>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <include layout="@layout/layout_search_top_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="#f7f7f6"
+        android:orientation="vertical"
+        android:padding="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="搜索记录"
+            android:textColor="#ec6c6c"
+            android:textSize="14sp" />
+
+        <cn.fxdata.tv.view.XGridView
+            android:id="@+id/hot_play_history_gv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:horizontalSpacing="20dp"
+            android:numColumns="3"
+            android:padding="10dp"
+            android:scrollbars="none"
+            android:verticalSpacing="20dp" >
+        </cn.fxdata.tv.view.XGridView>
+    </LinearLayout>
+    <RelativeLayout 
+        android:layout_width="match_parent"
+        android:layout_height="30dp">
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:text="删除记录"
+            />
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="#f7f7f6"
+        android:orientation="vertical"
+        android:padding="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="热门搜索"
+            android:textColor="#ec6c6c"
+            android:textSize="14sp" />
+
+        <cn.fxdata.tv.view.XGridView
+            android:id="@+id/hot_play_hot_search_gv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:horizontalSpacing="20dp"
+            android:numColumns="3"
+            android:padding="10dp"
+            android:scrollbars="none"
+            android:verticalSpacing="20dp" >
+        </cn.fxdata.tv.view.XGridView>
+    </LinearLayout>
+</LinearLayout>

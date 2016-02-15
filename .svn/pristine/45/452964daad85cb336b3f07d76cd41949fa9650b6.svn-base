@@ -1,0 +1,76 @@
+package cn.fxdata.tv.download;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import cn.fxdata.tv.utils.Log;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
+import android.widget.ProgressBar;
+
+public class DownloadService {
+
+    private static final String TAG = "DownloadService";
+    private Context mContext;
+
+    // 存放各个下载器
+    private Map<String, Downloader> downloaders = new HashMap<String, Downloader>();
+    
+    // 存放与下载器对应的进度条  
+    private Map<String, ProgressBar> ProgressBars = new HashMap<String, ProgressBar>();  
+
+    // 固定存放下载的音乐的路径：SD卡目录下
+    private static final String SD_PATH = "/mnt/sdcard/";
+
+    public interface DownloadStatusListener {
+        public void onUpdate(int length);
+    }
+
+    private DownloadStatusListener downloadListener;
+
+    public void setDownloadListener(DownloadStatusListener downloadListener) {
+        this.downloadListener = downloadListener;
+    }
+
+    private static DownloadService downloadService;
+
+    private Handler downloadHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            if (msg.what == 1) {
+                String url = (String) msg.obj;
+                int length = msg.arg1;
+                if (downloadListener != null) {
+                    Log.d(TAG, "Download status the length -->> " + length);
+                    downloadListener.onUpdate(length);
+                }
+            }
+        }
+    };
+
+    private static DownloadService getService(Context mContext) {
+        if (downloadService == null) {
+            downloadService = new DownloadService();
+            mContext = mContext;
+        }
+        return downloadService;
+    }
+
+    public void startDownload(String movieid, String movieName, String movieurl) {
+        // 初始化一个downloader下载器
+        Downloader downloader = downloaders.get(movieurl);
+        String localfile = SD_PATH + movieName;
+        int threadcount = 4;
+        if (downloader == null) {
+            downloader = new Downloader(movieurl, localfile, threadcount, mContext, downloadHandler);
+            downloaders.put(movieurl, downloader);
+        }
+        if (downloader.isdownloading())
+            return;
+        // 得到下载信息类的个数组成集合
+        LoadInfo loadInfo = downloader.getDownloaderInfors();
+        // 调用方法开始下载
+        downloader.download();
+    }
+
+}

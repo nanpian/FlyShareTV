@@ -1,0 +1,36 @@
+<resources>
+
+    <!-- comm -->
+    <!-- 字体适配 从小到大 -->
+    <dimen name="text_size_min">11sp</dimen>
+    <dimen name="text_size_micro">12sp</dimen>
+    <dimen name="text_size_small">14sp</dimen>
+    <dimen name="text_size_mediumall">16sp</dimen>
+    <dimen name="text_size_medium">18sp</dimen>
+    <dimen name="text_size_large">22sp</dimen>
+    <dimen name="text_size_huge">26sp</dimen>
+    <dimen name="text_size_max">32sp</dimen>
+
+    <!-- 边距 从小到大 -->
+    <dimen name="margin_min">5dp</dimen>
+    <dimen name="margin_micro">10dp</dimen>
+    <dimen name="margin_medium">15dp</dimen>
+    <dimen name="margin_large">20dp</dimen>
+    <dimen name="margin_max">25dp</dimen>
+    <dimen name="margin_huge">60dp</dimen>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="homepage_titlebar_margin">5dp</dimen>
+    <dimen name="homepage_titlebar_margin_nor">10dp</dimen>
+    <dimen name="homepage_titlebar_margin_hor">20dp</dimen>
+    <dimen name="homepage_top_bar_height">50dp</dimen>
+    <dimen name="homepage_bottom_bar_height">55dp</dimen>
+    <!-- main -->
+    <dimen name="top_search_bar_width">150dp</dimen>
+
+    <!-- Hotplay -->
+    <dimen name="page_margin_width">12dp</dimen>
+    <dimen name="common_text_size_middle_2">14dp</dimen>
+</resources>

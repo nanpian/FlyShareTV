@@ -1,0 +1,57 @@
+package cn.fxdata.tv.fragment;
+
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.activity.ForplayVideoViewActivity;
+import cn.fxdata.tv.adapter.FavAdapter;
+import cn.fxdata.tv.base.BaseFragment;
+import cn.fxdata.tv.bean.VideoItem;
+import cn.fxdata.tv.constants.Constants;
+
+/**
+ * Created by Jianyong on 15/6/12.
+ */
+public class OwnerMsgFavFragment extends BaseFragment {
+    private ArrayList<VideoItem> mItem = new ArrayList<VideoItem>();
+    private ListView mList;
+    private FavAdapter mFavAdapter;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.owner_msg_path_fragment,
+                container, false);
+        mList = (ListView) view.findViewById(R.id.path_list);
+        mFavAdapter = new FavAdapter(getActivity());
+        mList.setOnItemClickListener(mListListener);
+        mList.setAdapter(mFavAdapter);
+        return view;
+
+    }
+
+    private OnItemClickListener mListListener = new OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position,
+                long id) {
+            final Context context = view.getContext();
+            final FavAdapter.FavVideoItem video = (FavAdapter.FavVideoItem) parent
+                    .getItemAtPosition(position);
+            Bundle mBundle = new Bundle();
+            mBundle.putString(Constants.MovieExtra.EXTRA_MOVIE_ID,
+                    video.getVideoId());
+            showActivity(ForplayVideoViewActivity.class, mBundle);
+        }
+    };
+
+}

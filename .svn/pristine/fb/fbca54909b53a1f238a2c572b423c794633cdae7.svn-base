@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+    android:orientation="horizontal" >
+    
+    <ImageView
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/vedio_download_bg"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+             />"
+    
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="4"
+         >
+
+        <TextView 
+            android:id="@+id/download_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="8dp"
+           android:paddingRight="8dp"
+            android:gravity="center"
+            android:textColor="#000000"
+            />
+        <ProgressBar
+           android:id="@+id/download_progress"
+           android:layout_width="match_parent"
+           android:layout_height="20dp"
+           android:layout_gravity="bottom"
+           android:paddingTop="8dp"
+           android:paddingLeft="8dp"
+           android:paddingRight="8dp"
+           android:layout_marginBottom="8dp"
+           style="?android:attr/progressBarStyleHorizontal" />
+    </LinearLayout>
+    
+    <ImageView 
+           android:layout_width="0dp"
+           android:layout_height="60dp"
+           android:scaleType="centerInside"
+           android:layout_gravity="center_vertical|right"
+           android:layout_marginLeft="5dp"
+           android:layout_marginRight="5dp"
+           android:id="@+id/download_stop" 
+           android:src="@drawable/ic_media_pause"
+           android:layout_weight="1"
+           />
+    
+
+</LinearLayout>

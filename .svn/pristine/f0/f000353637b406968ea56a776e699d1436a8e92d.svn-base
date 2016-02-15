@@ -1,0 +1,195 @@
+package cn.fxdata.tv.bean;
+
+import java.io.Serializable;
+
+
+import cn.fxdata.tv.bean.LoginInfoReturn.LoginInfo;
+
+import com.google.gson.annotations.Expose;
+
+/** 
+ * TODO<用户详细信息>  
+ */
+public class UserInfoReturn implements Serializable{
+
+    @Expose
+    private Integer error_code;
+    @Expose
+    private String error_msg;
+    @Expose
+    private UserInfo data;
+    
+    /**
+     * @return the error_code
+     */
+    public Integer getError_code() {
+        return error_code;
+    }
+
+    /**
+     * @param error_code the error_code to set
+     */
+    public void setError_code(Integer error_code) {
+        this.error_code = error_code;
+    }
+
+    /**
+     * @return the error_msg
+     */
+    public String getError_msg() {
+        return error_msg;
+    }
+
+    /**
+     * @param error_msg the error_msg to set
+     */
+    public void setError_msg(String error_msg) {
+        this.error_msg = error_msg;
+    }
+
+    /**
+     * @return the data
+     */
+    public UserInfo getData() {
+        return data;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(UserInfo data) {
+        this.data = data;
+    }
+
+    public static class UserInfo extends LoginInfo implements Serializable {
+//      @Expose
+//      private String user_id;
+//      @Expose
+//      private String username;
+//      @Expose
+//      private String avatar;
+        @Expose
+        private String email;
+        @Expose
+        private String mobile;
+        @Expose
+        private String sex;
+        @Expose 
+        private String emotion;
+        @Expose
+        private String province;
+        @Expose
+        private String city;
+        @Expose
+        private Integer is_follow;
+        @Expose
+        private Integer is_block;
+        
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+//      @Override
+//      public String toString() {
+//          return "UserInfo [user_id=" + user_id + ", username=" + username + ", avatar=" + avatar + ", email=" + email + ", mobile=" + mobile + ", sex="
+//                  + sex + ", emotion=" + emotion + ", province=" + province + ", city=" + city + ", is_follow=" + is_follow + ", is_block=" + is_block + "]";
+//      }
+        /**
+         * @return the emotion
+         */
+        public String getEmotion() {
+            return emotion;
+        }
+        /**
+         * @param emotion the emotion to set
+         */
+        public void setEmotion(String emotion) {
+            this.emotion = emotion;
+        }
+        /**
+         * @return the province
+         */
+        public String getProvince() {
+            return province;
+        }
+        /**
+         * @param location the location to set
+         */
+        public void setCity(String city) {
+            this.city = city;
+        }
+        /**
+         * @return the city
+         */
+        public String getCity() {
+            return city;
+        }
+        /**
+         * @param location the location to set
+         */
+        public void setProvince(String location) {
+            this.province = location;
+        }
+        /**
+         * @return the is_follow
+         */
+        public Integer getIs_follow() {
+            return is_follow;
+        }
+        /**
+         * @param is_follow the is_follow to set
+         */
+        public void setIs_follow(Integer is_follow) {
+            this.is_follow = is_follow;
+        }
+        /**
+         * @return the is_block
+         */
+        public Integer getIs_block() {
+            return is_block;
+        }
+        /**
+         * @param is_block the is_block to set
+         */
+        public void setIs_block(Integer is_block) {
+            this.is_block = is_block;
+        }
+        /**
+         * @return the email
+         */
+        public String getEmail() {
+            return email;
+        }
+        /**
+         * @param email the email to set
+         */
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        /**
+         * @return the mobile
+         */
+        public String getMobile() {
+            return mobile;
+        }
+        /**
+         * @param mobile the mobile to set
+         */
+        public void setMobile(String mobile) {
+            this.mobile = mobile;
+        }
+        /**
+         * @return the sex
+         */
+        public String getSex() {
+            return sex;
+        }
+        /**
+         * @param sex the sex to set
+         */
+        public void setSex(String sex) {
+            this.sex = sex;
+        }
+        
+    }
+}
+

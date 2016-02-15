@@ -1,0 +1,29 @@
+package cn.fxdata.tv.activity;
+
+import com.lowlevel.videoviewcompat.MediaController;
+import com.lowlevel.videoviewcompat.VideoView;
+
+import android.app.Activity;
+import android.net.Uri;
+import android.os.Bundle;
+import cn.fxdata.tv.R;
+
+public class TestVideoViewActivity extends Activity {
+
+    private MediaController mediaController;
+
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.test_video_view);
+
+        VideoView vv = (VideoView) findViewById(R.id.video_surfaceview);
+        vv.setMediaController(new MediaController(this));
+
+        vv.setMediaController(new MediaController(this));
+        vv.setVideoURI(Uri.parse("http://fx.72zhe.com/static/fx/sample.f4v"));
+        vv.requestFocus();
+        vv.start();
+        // vv.start();
+    }
+
+}

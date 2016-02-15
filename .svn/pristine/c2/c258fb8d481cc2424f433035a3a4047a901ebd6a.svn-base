@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/homepage_top_bar_height"
+    android:background="@color/top_bar_bg" >
+
+    <TextView
+        android:id="@+id/textview_school"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:drawablePadding="5dp"
+        android:drawableRight="@drawable/arrow_down"
+        android:text="浙大"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+    <cn.fxdata.tv.view.SearchEditText
+        android:id="@+id/edit_search"
+        android:layout_width="130dp"
+        android:layout_height="28dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/hotplay_search_bar_bg"
+        android:drawableLeft="@drawable/icon_search"
+        android:drawablePadding="3dp"
+        android:gravity="center_vertical"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:padding="3dp"
+        android:singleLine="true"
+        android:textSize="13sp" />
+
+    <ImageView
+        android:id="@+id/image_person"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/icon_person_avatar" />
+
+    <ImageView
+        android:id="@+id/image_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:layout_toLeftOf="@id/image_person"
+        android:background="@drawable/icon_history_clock" />
+
+</RelativeLayout>

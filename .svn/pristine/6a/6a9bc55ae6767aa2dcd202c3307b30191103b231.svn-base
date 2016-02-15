@@ -1,0 +1,406 @@
+package cn.fxdata.tv.activity;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Message;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
+
+import com.android.volley.Listener;
+import com.android.volley.Request;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyTools;
+import com.android.volley.request.StringRequest;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.bean.HotSearchResult;
+import cn.fxdata.tv.bean.HotSearchResult.DataEntity.HotMovieEntity;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.db.SQLiteHelper;
+import cn.fxdata.tv.db.SearchUtils;
+import cn.fxdata.tv.utils.Log;
+import cn.fxdata.tv.utils.MJsonUtil;
+import cn.fxdata.tv.view.CustomDialog;
+import cn.fxdata.tv.view.SearchEditText;
+import cn.fxdata.tv.view.XGridView;
+
+public class SearchResultActivity extends BaseActivity implements
+        OnClickListener {
+
+    private static final String TAG = "SearchResultActivity";
+    private ImageView backImageView;
+    private SearchEditText searchEditText;
+    private SimpleAdapter adapter;
+    private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private String searchKey;
+    private ImageView mImgSearchView;
+    private ArrayList<String> mSearchHistory;
+    private static final int REFRESH_SEARCH_DATA = 1;
+    // 搜索显示
+    private RelativeLayout mSearchHotContent;
+    private GridView mHistoryGridView = null;
+    private ArrayAdapter mSearchHisAdapter;
+    private LinearLayout mSearchHistoryLayout;
+    // 热播
+    private GridView mHotSearchGridView = null;
+    private HotSearchAdapter mHotSeachAdapter;
+    private TextView mTvSearchDel;
+
+    // 搜素结果显示
+    private RelativeLayout mSrLayout;
+    private ImageView mImgSr; // 电视图片
+    private TextView mTvSrTitle; // 名称
+    private TextView mTvSrActor; // 演员
+    private TextView mTvSrCatogery; // 类型
+    private TextView mTvSrDate; // 时间
+    private TextView mTvSrCountry; // 时间
+    private TextView mTvSrPlayTime; // 播放次数
+    private TextView mImgStartPlay;
+    private RelativeLayout mSrColseLayout;
+    private ImageView mImgClose;
+    private XGridView mVideGrid;
+    private XGridView mVideList;
+    private LinearLayout mShowMoreLayout;
+    private TextView mTvShowMore;
+
+    private static final int SHOW_SEARCH_HIS = 1;
+    private static final int SHOW_SEARCH_RESULT = 2;
+    private static final int VIDEO_TOTIL_NUMBER = 75;
+    private static final int VIDEO_PER_LIST = 25;
+    private static final int VIDEO_SHOW = 15;
+
+    private android.os.Handler mUpdateHandler = new android.os.Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+            case REFRESH_SEARCH_DATA:
+                updateSearchList();
+                break;
+            default:
+                break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.act_search_result);
+        initView();
+        setup();
+        initData();
+    }
+
+    public void initView() {
+        backImageView = (ImageView) findViewById(R.id.image_back);
+        mImgSearchView = (ImageView) findViewById(R.id.image_down_back);
+        searchEditText = (SearchEditText) findViewById(R.id.edit_search);
+        Bundle bundle = getIntent().getExtras();
+        searchKey = bundle.getString("key");
+        searchEditText.setText(searchKey);
+        backImageView.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                finish();
+            }
+        });
+        // 初始化search view
+        mSearchHotContent = (RelativeLayout) findViewById(R.id.search_his_layout);
+        mImgSearchView.setBackgroundResource(R.drawable.arrow_down_left);
+        mImgSearchView.setOnClickListener(this);
+        mTvSearchDel = (TextView) findViewById(R.id.search_del_history);
+        mTvSearchDel.setOnClickListener(this);
+        mSearchHistoryLayout = (LinearLayout) findViewById(R.id.search_history);
+
+        // 初始化search result
+        mSrLayout = (RelativeLayout) findViewById(R.id.search_rst_layout);
+        mImgSr = (ImageView) findViewById(R.id.src_des_image);
+        mTvSrActor = (TextView) findViewById(R.id.src_des_actor);
+        mTvSrCountry = (TextView) findViewById(R.id.src_des_country);
+        mTvSrCatogery = (TextView) findViewById(R.id.src_des_catogery);
+        mTvSrDate = (TextView) findViewById(R.id.src_des_year);
+        mTvSrTitle = (TextView) findViewById(R.id.src_des_title);
+        mTvSrPlayTime = (TextView) findViewById(R.id.src_des_play_time);
+        mImgStartPlay = (TextView) findViewById(R.id.src_dec_play);
+        mSrColseLayout = (RelativeLayout) findViewById(R.id.src_close_content);
+        mImgClose = (ImageView) findViewById(R.id.src_rut_close);
+        mVideGrid = (XGridView) findViewById(R.id.src_video_grid);
+        mVideList = (XGridView) findViewById(R.id.src_video_list);
+        mShowMoreLayout = (LinearLayout) findViewById(R.id.src_show_more_content);
+        mTvShowMore = (TextView) findViewById(R.id.src_show_more);
+
+        switchContent(SHOW_SEARCH_HIS);
+    }
+
+    public void switchContent(int type) {
+        switch (type) {
+        case SHOW_SEARCH_HIS:
+            mSearchHotContent.setVisibility(View.VISIBLE);
+            mSrLayout.setVisibility(View.GONE);
+            break;
+        case SHOW_SEARCH_RESULT:
+            mSearchHotContent.setVisibility(View.GONE);
+            mSrLayout.setVisibility(View.VISIBLE);
+            mSrColseLayout.setVisibility(View.GONE);
+            mVideGrid.setVisibility(View.GONE);
+            break;
+        }
+    }
+
+    public void initData() {
+        if (mSearchHistory == null) {
+            mSearchHistory = new ArrayList<String>();
+        }
+        updateSearchList();
+        mSearchHisAdapter = new ArrayAdapter<String>(this,
+                R.layout.row_textview, mSearchHistory);
+        mHistoryGridView.setAdapter(mSearchHisAdapter);
+        mHistoryGridView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+
+            }
+        });
+        // 获得热搜索接口
+        getHotSearchMovies();
+    }
+
+    public void getHotSearchMovies() {
+        Log.i(TAG, "getHotSearchMovies");
+        VolleyTools tools = VolleyTools.getInstance(this);
+        StringRequest hotMovieRequest = new StringRequest(Request.Method.GET,
+                Constants.ServerConfig.HOT_SEARCH_URL, new Listener<String>() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Log.i(TAG, "hot movie result is : " + response);
+                        HotSearchResult hotSearchResult = MJsonUtil.gson
+                                .fromJson(response, HotSearchResult.class);
+                        Log.i(TAG, "get result success size is : "
+                                + hotSearchResult.getData().getHot_movie()
+                                        .size());
+                        if (hotSearchResult.getError_code() == 0) {
+                            if (mHotSeachAdapter != null) {
+                                mHotSeachAdapter
+                                        .setHotSearchData(hotSearchResult
+                                                .getData().getHot_movie());
+                                mHotSearchGridView.setAdapter(mHotSeachAdapter);
+                            }
+                        } else {
+                            Log.i(TAG, "error from server");
+                        }
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        super.onError(error);
+                        Log.i(TAG, "get hot search result error");
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        super.onCancel();
+                        Log.i(TAG, "cancel hot search result error");
+                    }
+                });
+        tools.addToRequestQueue(hotMovieRequest, VolleyTools.VolleyTAG);
+    }
+
+    private void setupViews() {
+        mHistoryGridView = (GridView) this
+                .findViewById(R.id.hot_play_history_gv);
+        mHotSearchGridView = (GridView) this
+                .findViewById(R.id.hot_play_hot_search_gv);
+        mHotSeachAdapter = new HotSearchAdapter(this);
+    }
+
+    private void setup() {
+        setupViews();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+        case R.id.image_down_back:
+            startSearch();
+            break;
+        case R.id.search_del_history:
+            delSearchHistory();
+            break;
+        default:
+            break;
+        }
+    }
+
+    public void startSearch() {
+        String name = searchEditText.getText().toString();
+        if (!TextUtils.isEmpty(name)) {
+            int number = SearchUtils.getInstance(this).getNumberByName(name);
+            SimpleDateFormat formatter = new SimpleDateFormat(
+                    "yyyy年MM月dd日HH:mm:ss");
+            Date curDate = new Date(System.currentTimeMillis());// 获取当前时间
+            String curTime = formatter.format(curDate);
+            if (number == -1) {
+                // 没有任何数据
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(SQLiteHelper.SEARCH_NAME, name);
+                contentValues.put(SQLiteHelper.SEARCH_NUMBER, 1);
+                // 当前时间
+                contentValues.put(SQLiteHelper.SEARCH_TIME, curTime);
+                SearchUtils.getInstance(this).insertSearchHis(contentValues);
+            } else {
+                // 有数据在里面
+                number = number + 1;
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(SQLiteHelper.SEARCH_NAME, name);
+                contentValues.put(SQLiteHelper.SEARCH_NUMBER, number);
+                // 当前时间
+                contentValues.put(SQLiteHelper.SEARCH_TIME, curTime);
+                String selection = SQLiteHelper.SEARCH_NAME + " = ?";
+                String[] selectionArgs = new String[] { name };
+                SearchUtils.getInstance(this).updateSearchHis(contentValues,
+                        selection, selectionArgs);
+            }
+
+            // 更新搜索数据列表
+            mUpdateHandler.obtainMessage(REFRESH_SEARCH_DATA).sendToTarget();
+            // 增加网络搜索,成功后显示
+            switchContent(SHOW_SEARCH_RESULT);
+
+        }
+    }
+
+    public void delSearchHistory() {
+        final CustomDialog dialog = new CustomDialog(getContext(),
+                "童鞋，确定要删除记录吗", "确定", "取消");
+        dialog.setOnButtonClickListener(new CustomDialog.OnButonClickListener() {
+
+            @Override
+            public void onLeftButtonClick() {
+                if (dialog != null && dialog.isShowing()) {
+                    // 删除数据，隐藏view
+                    if (mSearchHistory != null) {
+                        mSearchHistory.clear();
+                        SearchUtils.getInstance(SearchResultActivity.this)
+                                .deleteSearchHis(null, null);
+                        mSearchHisAdapter.notifyDataSetChanged();
+                    }
+
+                    mSearchHistoryLayout.setVisibility(View.GONE);
+                    mTvSearchDel.setVisibility(View.GONE);
+                    dialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onRightButtonClick() {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    public void updateSearchList() {
+        if (mSearchHistoryLayout.getVisibility() == View.GONE) {
+            mSearchHistoryLayout.setVisibility(View.VISIBLE);
+            mTvSearchDel.setVisibility(View.VISIBLE);
+        }
+        String orderBy = SQLiteHelper.SEARCH_TIME + " DESC";
+        String[] columns = new String[] { SQLiteHelper.SEARCH_NAME,
+                SQLiteHelper.SEARCH_TIME };
+        Cursor cursor = SearchUtils.getInstance(this).querySearchHis(columns,
+                null, null, null, null, orderBy, Integer.toString(9));
+        Log.i(TAG, "count is : " + cursor.getCount());
+        if (cursor != null && cursor.getCount() > 0) {
+            if (mSearchHistory != null) {
+                mSearchHistory.clear();
+                // cursor.moveToFirst();
+                // 会少一条？
+                // while (cursor.moveToNext()){
+                // mSearchHistory.add(cursor.getString(cursor.getColumnIndex(SQLiteHelper.SEARCH_NAME)));
+                // }
+                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor
+                        .moveToNext()) {
+                    mSearchHistory.add(cursor.getString(cursor
+                            .getColumnIndex(SQLiteHelper.SEARCH_NAME)));
+                }
+                Log.i(TAG, "mSearchHistory size is : " + mSearchHistory.size());
+            }
+            if (mSearchHisAdapter != null) {
+                mSearchHisAdapter.notifyDataSetChanged();
+            }
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+    }
+
+    public class HotSearchAdapter extends BaseAdapter {
+
+        private List<HotMovieEntity> mDataList;
+        private LayoutInflater mInflater;
+
+        public HotSearchAdapter(Context context) {
+            mInflater = LayoutInflater.from(context);
+        }
+
+        public void setHotSearchData(List<HotMovieEntity> dataList) {
+            this.mDataList = dataList;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public int getCount() {
+            if (mDataList != null) {
+                return mDataList.size();
+            }
+            return 0;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            if (mDataList != null) {
+                return mDataList.get(position);
+            }
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TextView textView = (TextView) mInflater.inflate(
+                    R.layout.row_textview, null);
+            HotMovieEntity hotSearchMovieEntity = mDataList.get(position);
+            textView.setText(hotSearchMovieEntity.getMovie_name());
+            return textView;
+        }
+    }
+}

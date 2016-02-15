@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="#CC000000"
+    android:orientation="horizontal" >
+
+    <ImageView
+        android:id="@+id/btn_back"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/arrow_left" />
+
+    <TextView
+        android:id="@+id/vedio_title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:text="标题"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/vedio_resolution"
+        style="@style/vedio_tile_text"
+        android:layout_height="match_parent"
+        android:layout_marginRight="15dp"
+        android:layout_toLeftOf="@+id/vedio_selections"
+        android:text="高清"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/vedio_selections"
+        style="@style/vedio_tile_text"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:text="选集"
+        android:visibility="gone" />
+
+</RelativeLayout>

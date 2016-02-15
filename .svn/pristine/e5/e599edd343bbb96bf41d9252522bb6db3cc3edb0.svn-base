@@ -1,0 +1,129 @@
+package cn.fxdata.tv.adapter;
+
+import android.content.Context;
+import android.os.Handler;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.List;
+import java.util.Map;
+
+import com.android.volley.image.ImageLoader;
+import com.android.volley.toolbox.BaseImageLoader.ImageListener;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.adapter.HotCommentAdapter.OnUserClickZanClickListener;
+import cn.fxdata.tv.adapter.HotCommentAdapter.ViewHolder;
+import cn.fxdata.tv.bean.HotCommentReturn.MovieComments;
+import cn.fxdata.tv.bean.comment.HotComment;
+import cn.fxdata.tv.http.VolleyRequestManager;
+import cn.fxdata.tv.utils.StringUtils;
+
+public class CommentAdapter extends BaseAdapter {
+    private Context mContext;
+
+    public CommentAdapter(Context context, List<HotComment> comments) {
+        this.mContext = context;
+        this.mAllComments = comments;
+    }
+
+    public void setHotComments(final List<HotComment> hotComments) {
+        new Handler().post(new Runnable() {
+            public void run() {
+            	mAllComments = hotComments;
+                notifyDataSetChanged();
+            }
+        });
+    }
+    
+    // 所有的评论
+    private List<HotComment> mAllComments;
+    
+    @Override
+    public int getCount() {
+        // TODO Auto-generated method stub
+        return mAllComments == null ? 0 : mAllComments.size();
+    }
+
+    @Override
+    public Object getItem(int arg0) {
+        // TODO Auto-generated method stub
+        return mAllComments == null ? null : mAllComments.get(arg0);
+    }
+
+    @Override
+    public long getItemId(int arg0) {
+        // TODO Auto-generated method stub
+        return arg0;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, ViewGroup arg2) {
+        // TODO Auto-generated method stub
+        ViewHolder holder;
+        if (convertView == null) {
+            holder = new ViewHolder();
+            convertView = LayoutInflater.from(mContext).inflate(
+                    R.layout.row_comment_item, null);
+            holder.avatar = (ImageView) convertView.findViewById(R.id.avatar);
+            holder.userName = (TextView) convertView
+                    .findViewById(R.id.userName);
+            holder.time = (TextView) convertView.findViewById(R.id.time);
+            holder.zan = (TextView) convertView.findViewById(R.id.zan);
+            holder.content = (TextView) convertView.findViewById(R.id.content);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        HotComment movieComment = mAllComments.get(position);
+        Log.d("zhudewei",
+                "movie comment avatar -->>" + movieComment.getAvatar()
+                        + " movie comment username"
+                        + movieComment.getUsername()
+                        + " moview comment prasie time -->> "
+                        + movieComment.getPraiseTimes());
+        if (false == StringUtils.isNullOrEmpty(movieComment.getAvatar())) {
+            ImageListener imageListener = ImageLoader.getImageListener(
+                    holder.avatar, R.drawable.avatar_default,
+                    R.drawable.avatar_default);
+            VolleyRequestManager.getInstance().getImageLoader()
+                    .get(movieComment.getAvatar(), imageListener);
+        }
+        holder.userName.setText(movieComment.getUsername() == null ? "null"
+                : movieComment.getUsername());
+        holder.time.setText(movieComment.getCreated() == null ? "null"
+                : movieComment.getCreated());
+        holder.zan.setText(movieComment.getPraiseTimes() == null ? "0"
+                : movieComment.getPraiseTimes());
+        holder.zan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            	if(mZanListener != null) {
+                    mZanListener.onZanClick(position);	
+            	}
+            }
+        });
+        holder.content.setText(movieComment.getContent());
+        return convertView;
+    }
+
+    private OnUserClickZanClickListener mZanListener;
+    public void setOnUserClickZanClickListener(
+            OnUserClickZanClickListener listener) {
+        this.mZanListener = listener;
+    }
+    
+    public class ViewHolder {
+        public ImageView avatar;
+        public TextView userName;
+        public TextView time;
+        public TextView zan;
+        public TextView content;
+    }
+}

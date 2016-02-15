@@ -1,0 +1,82 @@
+1.volley网络框架与服务器进行交互
+	// 1.初始化请求序列
+RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+	StringRequest mStringRequest = new StringRequest(Method.POST,//请求方式
+				Url地址, new Response.Listener<String>() {
+					@Override
+					public void onResponse(String response) {
+						L.d("请求结果:" + response);
+					
+					}
+				}, new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						
+					}
+				}) {
+			@Override
+			protected HashMap<String, String> getParams()
+					throws AuthFailureError { // 携带参数
+				HashMap<String, String> hashMap = new HashMap<String, String>();
+				hashMap.put("mobile", phone);
+				return hashMap;
+			}
+		};
+//加入到请求队列
+		requestQueue.add(mStringRequest);
+
+项目框架中关于网络请求：
+
+BaseActivity和BaseFragment封装了volley网络请求的方法senVolleyRequest()，项目中所有Activity和Fragment的要继承这两个类，BaseReturn是解析网络请求从服务器返回的数据实体的父类。error_code，错误码，error_msg，错误信息。VolleyListener继承自volley框架中网络请求监听Listener，类中封装了对请求返回的json字符串用fastjson框架提供的方法自动转换成继承自BaseReturn的对象实体。
+实现方式如：
+private void loginWithMobile(final String mobile, final String password) {
+        Map<String, String> param = new HashMap<String, String>();
+        param.put("mobile", mobile);
+        param.put("password", password);
+        param.put("ac", "login");
+        showDialog(getString(R.string.logining));
+        sendVolleyRequest(param, new VolleyListener(LoginInfoReturn.class,
+                new VolleyJsonCallBack() {
+
+                    @Override
+                    public void onResonpse(Object object) {
+                        // TODO Auto-generated method stub
+                    }
+
+                    @Override
+                    public void onError(int errorCode, String errorMsg) {
+                        // TODO Auto-generated method stub
+                        
+                    }
+                }));
+    }
+
+2.DbUtils
+项目框架中关于数据库用的是xutils框架中的Dbutils模块，具体使用方法可百度。
+http://blog.csdn.net/dj0379/article/details/38356773
+
+
+3.T.java
+全局静态单例toast，每次show不会重复
+ 静态方法T.show(String)
+
+4.Sharepf.java
+SharedPreferences 保存并读取配置信息
+用法：1.Sharepf.getInstance(mContext);
+      2.获取参数：Sharepf.get(key, defaultObject)//key,和初始值
+      3.设置参数：Sharepf.put(key, object);//key,值可以是常见类型
+
+5.UpdateManager
+应用升级管理类，文件下载用的是volley框架中的FileDownloader文件下载工具类
+
+6.view包下有一些常用自定义控件，
+dragtoplayout是向下拖拽显示view头部的控件
+Pullrefresh是上拉加载更多，下拉刷新控件
+Risenumber是向余额宝一样数字增长跳动的文本控件
+Swipelistview是listview滑动删除控件
+HorizontalListView是水平listview控件
+...
+项目中有需要用到的可以直接使用，如果不能满足还请自己定义新控件或者git...
+
+　　　

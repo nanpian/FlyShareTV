@@ -1,0 +1,219 @@
+package cn.fxdata.tv.activity;
+
+import cn.fxdata.tv.R;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
+import android.widget.Toast;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.fragment.detail.CommentFragment;
+import cn.fxdata.tv.fragment.detail.DetailFragment;
+import cn.fxdata.tv.fragment.detail.EpisodeFragment;
+import cn.fxdata.tv.utils.DPIUtil;
+import cn.fxdata.tv.utils.ToastUtils;
+import cn.fxdata.tv.view.StateImageView;
+import cn.fxdata.tv.view.StateImageView.ImageStateChangeInterface;
+import cn.fxdata.tv.view.widget.FlowRadioGroup;
+import cn.fxdata.tv.view.widget.FlowRadioGroup.OnCheckedChangeListener;
+
+import com.zgntech.core.manager.UIFragmentManager;
+
+/**
+ * Video detail fragment,there's a video surface view,a fragment
+ */
+public class ForplayVideoDetailActivity extends BaseActivity implements ImageStateChangeInterface{
+
+    private final static String TAG = "ForplayVideoDetailActivity";
+    private Context context;
+    private FlowRadioGroup mRadioGroup;
+    private UIFragmentManager fragmentManager;
+    private ImageView video_fullscreen;
+    private RelativeLayout video_play_all;
+    private RelativeLayout video_play_view;
+    private RelativeLayout video_down_layout;
+    private SurfaceView video_surfaceview;
+    private static int fragmentId = 0;
+    
+    private StateImageView mImgFollowMe;
+    private StateImageView mImgFav;
+    private String movie_id;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        context = this;
+        setContentView(R.layout.act_video_play_detail);
+        getIntentData();
+        initFragments();
+        initView();
+
+    }
+    
+    private void getIntentData(){
+        Intent intentParams = getIntent();
+        movie_id = intentParams.getExtras().getString("user_id");
+        Log.d(TAG, "The movie id -->> " + movie_id);
+    }
+
+    private void initView() {
+        mRadioGroup = (FlowRadioGroup) findViewById(R.id.video_detail_radiogroup);
+        mRadioGroup.setOnCheckedChangeListener(radioCheckedChangeListener);
+        mRadioGroup.getRadioButton(0).setChecked(true);
+        
+        mImgFollowMe = (StateImageView)findViewById(R.id.image_notice);
+        mImgFollowMe.setImgStateChangeListener(this);
+        mImgFav = (StateImageView)findViewById(R.id.image_fav);
+        mImgFav.setImgStateChangeListener(this);
+
+        video_fullscreen = (ImageView) findViewById(R.id.video_fullscreen);
+        video_down_layout = (RelativeLayout) findViewById(R.id.video_down_layout);
+        video_play_view = (RelativeLayout) findViewById(R.id.video_play_view);
+        video_surfaceview = (SurfaceView) findViewById(R.id.video_surfaceview);
+        video_fullscreen.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                video_down_layout.setVisibility(View.GONE);
+                video_surfaceview.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+                // video_play_view.requestLayout();
+                Configuration config = getResources().getConfiguration();
+                // 如果当前为横屏
+                if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    // 设置为竖屏
+                    Log.i(TAG, "the orientation is landscape last, and will portrait now");
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                }
+                // 如果当前为竖屏
+                if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    // 设置为横屏
+                    Log.i(TAG, "the orientation is portrait last, and will landscape now");
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+                
+                Intent i = new Intent(ForplayVideoDetailActivity.this, MovieActivity.class);
+                //i.setData(Uri.parse("http://fx.72zhe.com/static/fx/sample.mp4"));
+                i.setData(Uri.parse("http://fx.72zhe.com/static/fx/sample.f4v"));
+                i.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                startActivity(i);
+            }
+
+        });
+        
+    }
+
+    private void initFragments() {
+        fragmentManager = new UIFragmentManager(this, R.id.video_detail_content, getSupportFragmentManager());
+        
+        Bundle bundle = new Bundle();
+        bundle.putString("movie_id", "5");
+        
+        CommentFragment commentFragment = new CommentFragment();
+        commentFragment.setArguments(bundle);
+        
+        EpisodeFragment episodeFragment = new EpisodeFragment();
+        episodeFragment.setArguments(bundle);
+        
+        DetailFragment detailFragment = new DetailFragment();
+        detailFragment.setArguments(bundle);
+        
+        fragmentManager.put("video_detail_comments", commentFragment);
+        fragmentManager.put("video_detail_channel", episodeFragment);
+        fragmentManager.put("video_detail_description", detailFragment);
+    }
+
+    /** tab button checked listener */
+    private OnCheckedChangeListener radioCheckedChangeListener = new OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(FlowRadioGroup group, int checkedId) {
+            // TODO Auto-generated method stub
+            switch (checkedId) {
+            case R.id.video_detail_comment:
+                fragmentManager.show("video_detail_comments");
+                fragmentId = 0;
+                break;
+            case R.id.video_detail_channel:
+                fragmentManager.show("video_detail_channel");
+                fragmentId = 1;
+                break;
+            case R.id.video_detail_description:
+                fragmentManager.show("video_detail_description");
+                fragmentId = 2;
+                break;
+            default:
+                break;
+            }
+        }
+    };
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // TODO Auto-generated method stub
+        super.onConfigurationChanged(newConfig);
+        Log.i(TAG, " == onConfigurationChanged");
+        String screen = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "横屏" : "竖屏";
+        Toast.makeText(this, screen, Toast.LENGTH_LONG).show();
+    }
+
+    /*
+     * @Override public void onBackPressed() { Configuration config =
+     * getResources().getConfiguration(); // 如果当前为横屏 if (config.orientation ==
+     * Configuration.ORIENTATION_LANDSCAPE) { // 设置为竖屏 Log.i(TAG,
+     * "the orientation is landscape last, and will portrait now");
+     * setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); }
+     * return; }
+     */
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Configuration config = getResources().getConfiguration();
+            // if the screen orientation is landscape now
+            if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                // set it portait!!!
+                Log.i(TAG, "the orientation is landscape last, and will portrait now");
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                video_surfaceview.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, DPIUtil.dip2px(140)));
+                video_down_layout.setVisibility(View.VISIBLE);
+                return true;
+            } else {
+                finish();
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+	@Override
+	public void onImageStateChange(boolean isSelected, View view) {
+		switch (view.getId()) {
+		case R.id.image_notice:
+			if (isSelected) {
+		        ToastUtils.ToastAdd(this, "追到手拉，快去来追我列表看看");
+			} else {
+				ToastUtils.ToastRemove(this, "我被甩啦");
+			}
+			break;
+		case R.id.image_fav:
+			if (isSelected) {
+				ToastUtils.ToastAdd(this, "收藏成功");
+			} else {
+				ToastUtils.ToastRemove(this, "取消收藏");
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+
+}

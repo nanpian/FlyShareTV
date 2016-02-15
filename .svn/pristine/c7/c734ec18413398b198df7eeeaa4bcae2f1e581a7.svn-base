@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp" >
+
+        <RelativeLayout
+            android:id="@+id/frag_detail_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp" >
+
+            <ImageView
+                android:id="@+id/frag_detail_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/video_image_02" />
+
+            <TextView
+                android:id="@+id/userName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_toRightOf="@id/frag_detail_image"
+                android:text="万物生长(电影)"
+                android:textColor="@color/text_red_color"
+                android:textSize="24px"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/userName"
+                android:layout_marginTop="10dp"
+                android:layout_toRightOf="@id/frag_detail_image"
+                android:text="年份: 2014"
+                android:textColor="#646464"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/district"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/time"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/time"
+                android:text="地区: 大陆"
+                android:textColor="#646464"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/detail_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/district"
+                android:layout_toRightOf="@id/frag_detail_image"
+                android:text="类型: 青春文艺片"
+                android:textColor="#646464"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/detail_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/detail_type"
+                android:layout_toRightOf="@id/frag_detail_image"
+                android:text="万物生长是一部青春文艺片，原著冯唐"
+                android:textColor="#646464"
+                android:textSize="12sp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/frag_detail_layout"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="#ec6c6c" />
+    </RelativeLayout>
+
+</FrameLayout>

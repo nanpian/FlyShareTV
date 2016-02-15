@@ -1,0 +1,159 @@
+package cn.fxdata.tv.utils;
+
+import android.os.Environment;
+import android.os.Process;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Date;
+
+public class Log {
+
+	/**
+	 * 全局日志开关，正式包为false，不会将日志信息打入到apk中；仅开发模式中，才将此值设置为true；
+	 */
+	private final static boolean printLog = true;
+
+	public final static boolean D = printLog;
+	public final static boolean V = printLog;
+	public final static boolean I = printLog;
+	public final static boolean W = printLog;
+	public final static boolean E = printLog;
+
+	// 日志存储目录
+	public static final String LOG_FILE = Environment.getExternalStorageDirectory() + "/fxapp_log.txt";
+	// 是否是测试模式
+    //public static final boolean IS_TEST = Configuration.getBooleanProperty(Configuration.TEST_MODE);
+	
+	public static final boolean IS_TEST = false;
+
+	private static RandomAccessFile accessFile;
+
+//	static {
+//		if (IS_TEST) {
+//			File file = new File(LOG_FILE);
+//			if (!file.exists()) {
+//				try {
+//					file.createNewFile();
+//				} catch (IOException e) {
+//					if (E) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}
+//	}
+
+	public static void d(String tag, String msg) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.d(tag, "tid:" + Process.myTid() + "; -->" + msg);
+		saveLog(tag + ":" + msg);
+	}
+
+	public static void d(String tag, String msg, Throwable tr) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.d(tag, msg, tr);
+		saveLog(tag + ":" + msg + tr.getMessage());
+	}
+
+	public static void v(String tag, String msg) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.v(tag, msg);
+		saveLog(tag + ":" + msg);
+	}
+
+	public static void v(String tag, String msg, Throwable tr) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.v(tag, msg, tr);
+		saveLog(tag + ":" + msg + tr.getMessage());
+	}
+
+	public static void i(String tag, String msg) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.i(tag, msg);
+		saveLog(tag + ":" + msg);
+	}
+
+	public static void i(String tag, String msg, Throwable tr) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.i(tag, msg, tr);
+		saveLog(tag + ":" + msg + tr.getMessage());
+	}
+
+	public static void w(String tag, String msg) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.w(tag, msg);
+		saveLog(tag + ":" + msg);
+	}
+
+	public static void w(String tag, Throwable tr) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.w(tag, tr);
+		saveLog(tag + ":" + tr.getMessage());
+	}
+
+	public static void w(String tag, String msg, Throwable tr) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.w(tag, msg, tr);
+		saveLog(tag + ":" + msg + tr.getMessage());
+	}
+
+	public static void e(String tag, String msg) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.e(tag, msg);
+		saveLog(tag + ":" + msg);
+	}
+
+	public static void e(String tag, String msg, Throwable tr) {
+		if (!printLog) {
+			return;
+		}
+        android.util.Log.e(tag, msg, tr);
+		saveLog(tag + ":" + msg + tr.getMessage());
+	}
+
+	private static void saveLog(String msg) {
+		if (IS_TEST)
+			try {
+				
+				if(!FileUtil.externalMemoryAvailable()){ //在sd卡ok的时候，才去写日志
+					return;
+				}
+				
+				if (accessFile == null) {
+					accessFile = new RandomAccessFile(LOG_FILE, "rw");
+				}
+				long fileLength = accessFile.length();
+				// 将写文件指针移到文件尾。
+				accessFile.seek(fileLength);
+				accessFile.writeBytes(FormatUtil.formatDate(new Date()) + ":");
+				accessFile.writeBytes(msg);
+				accessFile.writeBytes("\r\n");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	}
+}

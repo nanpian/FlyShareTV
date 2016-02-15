@@ -1,0 +1,255 @@
+
+package cn.fxdata.tv.fragment;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Listener;
+import com.android.volley.Request;
+import com.android.volley.Request.Method;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyTools;
+import com.android.volley.request.StringRequest;
+import com.google.gson.Gson;
+import com.zgntech.core.util.DebugLog;
+import com.zgntech.core.view.pullrefresh.PullToRefreshBase;
+import com.zgntech.core.view.pullrefresh.PullToRefreshListView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.adapter.FollowMeAdapter;
+import cn.fxdata.tv.base.BaseTitleBarFragment;
+import cn.fxdata.tv.bean.Follow;
+import cn.fxdata.tv.bean.FollowEntity;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.utils.ToastUtils;
+import cn.fxdata.tv.view.CustomDialog;
+import cn.fxdata.tv.view.widget.FXProgressBar;
+
+public class FollowMeFragment extends BaseTitleBarFragment {
+
+    protected static final String TAG = "FollowMeFragment";
+
+    private static final String FollowMeTitle = "来追我";
+    // 主界面的listview
+    private ListView followVedioListView;
+    // 转圈view
+    // 连接错误view
+    private ImageView connect_error;
+    private List<FollowEntity> followEntityList;
+    private FollowMeAdapter mFollowMeAdapter;
+    private boolean isPrepared = false;
+    public VolleyTools tools;
+    private PullToRefreshListView pullToRefreshListView;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate.....");
+        // TODO Auto-generated method stub
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        setRightImageView(R.drawable.icon_person_avatar);
+        setRight2ImageView(R.drawable.icon_history_clock);
+        setTitleText(FollowMeTitle);
+        setContentLayout(R.layout.frag_main_follow_me);
+        pullToRefreshListView = (PullToRefreshListView) layoutContent.findViewById(R.id.pull_refresh);
+        pullToRefreshListView.setPullLoadEnabled(false);
+        pullToRefreshListView.setScrollLoadEnabled(false);
+        pullToRefreshListView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener<ListView>() {
+            @Override
+            public void onPullDownToRefresh(PullToRefreshBase<ListView> refreshView) {
+                getData();
+            }
+
+            @Override
+            public void onPullUpToRefresh(PullToRefreshBase<ListView> refreshView) {
+
+            }
+        });
+        followVedioListView = pullToRefreshListView.getRefreshableView();
+        connect_error = (ImageView) layoutContent.findViewById(R.id.connect_error);
+        connect_error.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                pullToRefreshListView.setVisibility(View.VISIBLE);
+                connect_error.setVisibility(View.GONE);
+                pullToRefreshListView.doPullRefreshing(true, Constants.DEFAULT_VALUE.DEFAULT_LIST_LAOD_DELAYMILLIS);
+            }
+        });
+
+        followEntityList = new ArrayList<FollowEntity>();
+        mFollowMeAdapter = new FollowMeAdapter(getContext(), followEntityList);
+        followVedioListView.setAdapter(mFollowMeAdapter);
+
+        isPrepared = true;
+        lazyLoad();
+
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "follow me onresume");
+/*        if (getUserVisibleHint()) {
+            new Handler(getActivity().getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    vedioPullToRefreshListView.setRefreshing();
+                }
+            }, 1000);
+        }*/
+    }
+
+    @Override
+    protected void lazyLoad() {
+        Log.d(TAG, "load...");
+        // TODO Auto-generated method stub
+        // TODO Auto-generated method stub
+        if (!isPrepared || !isVisible) {
+            return;
+        }
+        Log.d(TAG, "---");
+        pullToRefreshListView.doPullRefreshing(true, Constants.DEFAULT_VALUE.DEFAULT_LIST_LAOD_DELAYMILLIS);
+
+    }
+
+    private void getData() {
+
+        pullToRefreshListView.setVisibility(View.VISIBLE);
+        followVedioListView.setVisibility(View.GONE);
+        connect_error.setVisibility(View.GONE);
+        tools = VolleyTools.getInstance(this.getContext());
+        tools.addToRequestQueue(new StringRequest(Method.POST, Constants.ServerConfig.FOLLOW_ME_URL2,
+                new Listener<String>() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Log.d(TAG, "the response --> " + response);
+                        pullToRefreshListView.onPullDownRefreshComplete();
+                        followVedioListView.setVisibility(View.VISIBLE);
+                        connect_error.setVisibility(View.GONE);
+                        Follow follow = new Gson().fromJson(response, Follow.class);
+                        if (0 == follow.getErrorCode()) {
+                            followEntityList = new ArrayList<FollowEntity>();
+                            for (int i = 0; i < follow.getData().getList().size(); i++) {
+                                FollowEntity entity = follow.getData().getList().get(i);
+                                Log.d(TAG, "entity:" + entity.toString());
+                                followEntityList.add(follow.getData().getList().get(i));
+                            }
+                            mFollowMeAdapter = new FollowMeAdapter(getContext(), followEntityList);
+                            followVedioListView.setAdapter(mFollowMeAdapter);
+                            mFollowMeAdapter.setOnFollowMeItemClickListener(new FollowMeAdapter.OnFollowMeItemClickListener() {
+                                @Override
+                                public void onCancelClick(final int position) {
+                                    Log.d(TAG, "position:" + position);
+
+                                    final CustomDialog dialog = new CustomDialog(getContext(), "童鞋，确定不追我了吗", "确定", "取消");
+                                    dialog.setOnButtonClickListener(new CustomDialog.OnButonClickListener() {
+
+                                        @Override
+                                        public void onLeftButtonClick() {
+                                            Log.d(TAG, "onLeftClick");
+                                            if (dialog != null && dialog.isShowing()) {
+                                                dropCatch(position);
+                                                dialog.dismiss();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onRightButtonClick() {
+                                            Log.d(TAG, "onRightClick");
+                                            dialog.dismiss();
+                                        }
+                                    });
+                                    dialog.show();
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        super.onError(error);
+                        pullToRefreshListView.onPullDownRefreshComplete();
+                        pullToRefreshListView.setVisibility(View.GONE);
+                        followVedioListView.setVisibility(View.GONE);
+                        connect_error.setVisibility(View.VISIBLE);
+                        Log.d(TAG, "the response --> " + error.toString());
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        super.onCancel();
+                        pullToRefreshListView.onPullDownRefreshComplete();
+                        DebugLog.d("onCancel");
+                    }
+                }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("user_id", "1");
+                return map;
+            }
+        }, tools.VolleyTAG);
+    }
+
+    private void dropCatch(final int position) {
+        final FollowEntity entity = followEntityList.get(position);
+        tools = VolleyTools.getInstance(this.getContext());
+        tools.addToRequestQueue(new StringRequest(Method.POST, Constants.ServerConfig.DROP_URL,
+                new Listener<String>() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Log.d(TAG, "the response --> " + response);
+                        try {
+                            JSONObject object = new JSONObject(response);
+                            if (object.optInt("error_code") == 0) {
+                                ToastUtils.ToastAdd(getContext(), "弃追成功！");
+                            }
+                            followEntityList.remove(position);
+                            mFollowMeAdapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        super.onError(error);
+                        Log.d(TAG, "the response --> " + error.toString());
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        super.onCancel();
+                    }
+                }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("chase_id", entity.getMovie_id());
+                return map;
+            }
+        }, tools.VolleyTAG);
+    }
+
+    @Override
+    public String getUserId() {
+        return "1";
+    }
+}

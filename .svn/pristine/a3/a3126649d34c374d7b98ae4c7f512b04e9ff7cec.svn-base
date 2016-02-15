@@ -1,0 +1,76 @@
+
+package cn.fxdata.tv.activity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import cn.fxdata.tv.R;
+import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.Toast;
+
+import cn.fxdata.tv.adapter.CommentAdapter;
+import cn.fxdata.tv.base.BaseActivity;
+
+import com.zgntech.core.util.UiTools;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-30
+ * @version：V1.0
+ */
+public class ForcastVideoDetailActivity extends BaseActivity {
+    private ListView commentListView;
+    private CommentAdapter adapter;
+    private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private ScrollView scrollview;
+    private ImageView backImageView;
+    private Button sendButton;
+    private EditText commentEditText;
+    private Context context;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onCreate(savedInstanceState);
+        context = this;
+        setContentView(R.layout.act_video_forcast_detail);
+        commentListView = (ListView) findViewById(R.id.comment_listview);
+        scrollview = (ScrollView) findViewById(R.id.mScrollView);
+        backImageView = (ImageView) findViewById(R.id.btn_back);
+        sendButton = (Button) findViewById(R.id.btn_send);
+        commentEditText = (EditText) findViewById(R.id.comment_edit);
+        backImageView.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                Log.i("TAG", " back onClick");
+                finish();
+            }
+        });
+        sendButton.setOnClickListener(new OnClickListener() {
+            
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                commentEditText.setText("");
+                Toast.makeText(context, "评论成功", 1000).show();
+            }
+        });
+        adapter = new CommentAdapter(this, data);
+        commentListView.setAdapter(adapter);
+        UiTools.setListViewHeightBasedOnChildren(commentListView);
+        scrollview.smoothScrollTo(0, 0);
+    }
+}

@@ -1,0 +1,107 @@
+package cn.fxdata.tv.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+
+import java.util.List;
+
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.bean.FollowEntity;
+import cn.fxdata.tv.view.ProgressSeekBar;
+
+/**
+ * Created by Jianyong on 15/6/16.
+ */
+public class FollowMeAdapter extends BaseAdapter {
+
+    private Context mContext;
+    private List<FollowEntity> followEntities;
+    private LayoutInflater inflater;
+    private OnFollowMeItemClickListener onFollowMeItemClickListener;
+
+    public FollowMeAdapter(Context context, List<FollowEntity> entities) {
+        mContext = context;
+        this.followEntities = entities;
+        inflater = LayoutInflater.from(context);
+    }
+
+    @Override
+    public int getCount() {
+        return followEntities.size();
+    }
+
+    @Override
+    public FollowEntity getItem(int i) {
+        return followEntities.get(i);
+    }
+
+    @Override
+    public long getItemId(int i) {
+        return i;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, ViewGroup viewGroup) {
+
+        ViewHolder holder;
+        if (convertView == null) {
+            holder = new ViewHolder();
+            convertView = inflater.inflate(R.layout.row_follow_vedio, null);
+            holder.ivBackground = (ImageView) convertView.findViewById(R.id.image_video);
+            holder.btnCancel = (LinearLayout) convertView.findViewById(R.id.ll_cancel);
+            holder.seekBar = (SeekBar) convertView.findViewById(R.id.seekbar);
+            holder.tvAttach = (TextView) convertView.findViewById(R.id.video_attach);
+            holder.tvDate = (TextView) convertView.findViewById(R.id.textview_date);
+            holder.tvTitle = (TextView) convertView.findViewById(R.id.video_name);
+            holder.tvType = (TextView) convertView.findViewById(R.id.button_video_type);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        FollowEntity entity = followEntities.get(position);
+
+        ImageLoader.getInstance().displayImage(entity.getThumb(), holder.ivBackground);
+        holder.tvType.setText(entity.getType());
+        holder.tvDate.setText(entity.getRecent_time());
+        holder.tvTitle.setText(entity.getMovie_name());
+        holder.tvAttach.setText("您定的TV速递" + entity.getRecent_sets()+"小时后到达");
+
+        holder.btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onFollowMeItemClickListener.onCancelClick(position);
+            }
+        });
+
+        return convertView;
+    }
+
+    class ViewHolder {
+        private ImageView ivBackground;
+        private TextView tvType;
+        private TextView tvDate;
+        private SeekBar seekBar;
+        private TextView tvTitle;
+        private TextView tvAttach;
+        private LinearLayout btnCancel;
+    }
+
+    public interface OnFollowMeItemClickListener {
+        void onCancelClick(int position);
+    }
+
+    public void setOnFollowMeItemClickListener(OnFollowMeItemClickListener listener) {
+        this.onFollowMeItemClickListener = listener;
+    }
+}

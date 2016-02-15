@@ -1,0 +1,120 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <style name="AppBaseTheme" parent="android:Theme.Light.NoTitleBar">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+
+    <style name="MainTabRadioButtonStyle">
+        <item name="android:button">@null</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:background">@drawable/transparent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:textColor">@drawable/radiobuttoncolor</item>
+    </style>
+
+    <style name="custom_dialog" parent="android:Theme.Dialog">
+
+        <!-- windowFrame框为无 -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <!-- 除去背景 -->
+        <item name="android:windowBackground">@null</item>
+        <!-- 是否浮现在activity之上 -->
+        <item name="android:windowIsFloating">true</item>
+        <!-- 是否半透明 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!-- 去掉覆盖层 -->
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- 设置背景颜色 -->
+        <item name="android:background">#00000000</item>
+    </style>
+
+    <style name="common_button_01" parent="@android:style/TextAppearance.Medium">
+        <item name="android:background">@drawable/common_button_01_selector</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="common_button_02" parent="@android:style/TextAppearance.Medium">
+        <item name="android:background">@drawable/common_button_02_selector</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#ec6c6c</item>
+    </style>
+
+    <style name="bottom_line1">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">0.5dp</item>
+        <item name="android:background">#ec6c6c</item>
+    </style>
+
+    <!-- Hotplay classify -->
+    <declare-styleable name="TitleIndicator">
+        <attr name="titlePadding" format="dimension" />
+        <!-- Left/right padding of not active view titles. -->
+        <attr name="clipPadding" format="dimension" />
+        <attr name="textColor" format="color|reference" />
+        <attr name="textSizeNormal" format="dimension" />
+        <attr name="textSizeSelected" format="dimension" />
+        <attr name="footerLineHeight" format="dimension" />
+        <attr name="footerColor" format="color" />
+        <attr name="footerTriangleHeight" format="dimension" />
+    </declare-styleable>
+
+    <style name="MyWidget" parent="@android:style/Theme" />
+
+    <style name="MyWidget.TabText">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/tab_indicator_text</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">marquee</item>
+    </style>
+
+    <style name="style_Button" parent="@android:style/Widget.Button">
+        <item name="android:textColor">#ff0000</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:layout_width">130dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:background">@drawable/btn_common_01_normal</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="switch_layout">
+        <item name="android:thumb">@drawable/switch_thumb</item>
+        <item name="android:track">@drawable/switch_track</item>
+        <item name="android:thumbTextPadding">12dip</item>
+        <item name="android:switchTextAppearance">@android:style/TextAppearance.Small</item>
+        <item name="android:textOn">""</item>
+        <item name="android:textOff">""</item>
+        <item name="android:switchMinWidth">50dip</item>
+        <item name="android:switchPadding">16dip</item>
+    </style>
+    
+    <style name="vedio_tile_text">
+        <item name="android:textColor">@drawable/vedio_title_text_selector</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center_vertical</item>
+    </style>
+
+</resources>

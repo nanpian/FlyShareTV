@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- comm -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="grey">#e4e4e4</color>
+    <!-- main -->
+    <color name="top_bar_bg">#4e565e</color>
+    <color name="main_page_bg">#FFFFFF</color>
+
+    <!-- text -->
+    <color name="top_bar_text_color">#998b8b</color>
+    <color name="bottom_bar_text_color">#cbc5c5</color>
+	<color name="button_text_color_white">#ffffff</color>
+    <!-- line color -->
+    <color name="fengge_line_color">#ec6c6c</color>
+    <color name="grey_fengge_line_color">#adadad</color>
+
+    <!-- text red color -->
+    <color name="text_red_color">#ec6c6c</color>
+	<color name="user_text_color">#646464</color>
+    <!-- radio button color -->
+    <drawable name="red_radiotext">#ec6c6c</drawable>
+    <drawable name="gray_radiotext">#646464</drawable>
+
+    <!-- video player -->
+    <color name="darker_transparent">#C1000000</color>
+
+    <!-- compat video view -->
+    <color name="dim_foreground_dark">#bebebe</color>
+
+    <!-- Hotplay -->
+    <color name="common_white">#ffffff</color>
+    <color name="tab_indicator_text_selected">#ffffff</color>
+    <color name="tab_indicator_text_unselected">@android:color/black</color>
+    <color name="hot_play_classify_indicator_bg">#ffec6b6b</color>
+
+</resources>

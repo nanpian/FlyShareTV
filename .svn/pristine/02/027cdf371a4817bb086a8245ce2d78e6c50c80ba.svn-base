@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/top_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:background="@color/hot_play_classify_indicator_bg" />
+
+    <GridLayout
+        android:id="@+id/search_result_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/top_line"
+        android:layout_marginTop="10dp"
+        android:columnCount="2"
+        android:rowCount="9">
+
+        <ImageView
+            android:id="@+id/src_des_image"
+            android:layout_marginLeft="20dp"
+            android:layout_rowSpan="9"
+            android:background="@drawable/video_image_02"
+            android:scaleType="fitXY" />
+
+        <TextView
+            android:id="@+id/src_des_title"
+            android:layout_marginLeft="20dp"
+            android:layout_rowSpan="2"
+            android:text="Kill me Heal me"
+            android:textColor="@color/hot_play_classify_indicator_bg"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/src_des_actor"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_rowSpan="1"
+            android:text="主演: 黄静音"
+            android:textColor="@color/user_text_color"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/src_des_catogery"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_rowSpan="1"
+            android:text="类型: 言情"
+            android:textColor="@color/user_text_color"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/src_des_year"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_rowSpan="1"
+            android:text="年份: 2015"
+            android:textColor="@color/user_text_color"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/src_des_country"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_rowSpan="1"
+            android:text="地区: 韩国"
+            android:textColor="@color/user_text_color"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/src_des_play_time"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_rowSpan="1"
+            android:text="播放次数: 20000"
+            android:textColor="@color/user_text_color"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/src_dec_play"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_rowSpan="2"
+            android:background="@drawable/icon_play_normal" />
+    </GridLayout>
+
+    <View
+        android:id="@+id/middle_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/search_result_description"
+        android:layout_marginTop="10dp"
+        android:background="@color/hot_play_classify_indicator_bg" />
+
+    <RelativeLayout
+        android:id="@+id/src_close_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/middle_line">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:text="选集"
+            android:textColor="@color/user_text_color"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/src_rut_close"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/skyblue_editpage_image_remove" />
+
+        <View
+            android:id="@+id/middle_line1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/src_rut_close"
+            android:layout_marginTop="10dp"
+            android:background="@color/hot_play_classify_indicator_bg" />
+    </RelativeLayout>
+
+
+    <cn.fxdata.tv.view.XGridView
+        android:id="@+id/src_video_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/src_close_content"
+        android:horizontalSpacing="20dp"
+        android:numColumns="3"
+        android:paddingLeft="20dp"
+        android:paddingRight="20sp"
+        android:scrollbars="none"
+        android:verticalSpacing="20dp"></cn.fxdata.tv.view.XGridView>
+
+    <cn.fxdata.tv.view.XGridView
+        android:id="@+id/src_video_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/src_video_grid"
+        android:horizontalSpacing="10dp"
+        android:numColumns="5"
+        android:paddingLeft="20dp"
+        android:paddingRight="20sp"
+        android:scrollbars="none"
+        android:verticalSpacing="20dp"></cn.fxdata.tv.view.XGridView>
+
+    <LinearLayout
+        android:layout_below="@+id/src_video_list"
+        android:id="@+id/src_show_more_content"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/src_show_more"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查看更多"
+            android:textSize="24sp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/hot_play_classify_indicator_bg"/>
+        <View
+            android:id="@+id/middle_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/src_close_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/hot_play_classify_indicator_bg" />
+    </LinearLayout>
+</RelativeLayout>

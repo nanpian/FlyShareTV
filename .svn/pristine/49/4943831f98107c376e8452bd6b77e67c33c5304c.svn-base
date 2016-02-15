@@ -1,0 +1,473 @@
+package cn.fxdata.tv.activity;
+
+import java.util.Calendar;
+
+import com.android.volley.Listener;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyTools;
+import com.android.volley.Request.Method;
+import com.android.volley.request.StringRequest;
+import com.google.gson.reflect.TypeToken;
+import com.zgntech.core.manager.UIFragmentManager;
+
+import cn.fxdata.tv.R;
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+import cn.fxdata.tv.service.DownloadManagerService;
+import cn.fxdata.tv.utils.MJsonUtil;
+import cn.fxdata.tv.utils.ToastUtils;
+import cn.fxdata.tv.view.StateImageView;
+import cn.fxdata.tv.view.StateImageView.ImageStateChangeInterface;
+import cn.fxdata.tv.view.video.FullScreenVideoView;
+import cn.fxdata.tv.view.video.VideoControllerView;
+import cn.fxdata.tv.view.widget.FlowRadioGroup.OnCheckedChangeListener;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.bean.DownloadVideoManager;
+import cn.fxdata.tv.bean.FlyShareTVdataHelper;
+import cn.fxdata.tv.bean.MovieDetail;
+import cn.fxdata.tv.bean.VideoItem;
+import cn.fxdata.tv.constants.Constants;
+import cn.fxdata.tv.fragment.detail.CommentFragment;
+import cn.fxdata.tv.fragment.detail.DetailFragment;
+import cn.fxdata.tv.fragment.detail.EpisodeFragment;
+import cn.fxdata.tv.view.widget.FlowRadioGroup;
+
+/**
+ * 视频详情页面
+ */
+
+public class ForplayVideoViewActivity extends BaseActivity implements FullScreenVideoView.ToggleFullScreen,ImageStateChangeInterface {
+
+    private final static String TAG = "ForplayVideoDetailActivity";
+    private Context context;
+    private FlowRadioGroup mRadioGroup;
+    private UIFragmentManager fragmentManager;
+    private ImageView video_fullscreen;
+    private RelativeLayout video_play_all;
+    private cn.fxdata.tv.view.video.FullScreenVideoView video_play_view;
+    private RelativeLayout video_down_layout;
+    private FullScreenVideoView mVideoView;
+    private static int fragmentId = 0;
+    private ProgressBar bar;
+    int height;
+    int width;
+    private StateImageView mImgFollowMe;
+    private StateImageView mImgFav;
+    private FlyShareTVdataHelper dbHelper;
+    private String videoUri;
+    private ImageView mDownloadImage;
+    private DownloadManagerService.DownloadBinder mBinder;
+    public VideoControllerView videoControllerView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        context = this;
+        setContentView(R.layout.act_video_play_view_detail);
+        dbHelper = new FlyShareTVdataHelper(this,"FlyShareTV.db3", null, 1);
+        initFragments();
+        initView();
+        Intent intent = new Intent(this,DownloadManagerService.class);
+		//intent.setAction("cn.fxdata.tv.download_action");
+       //startService(intent);
+       // bindService(intent,conn,0);
+        
+        mVideoView.setOnToggleFullScreen(this);
+        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                bar.setVisibility(View.GONE);
+            }
+        });
+
+        calculateVideoViewSize();
+        mVideoView.setDimensions(width, height);
+        videoControllerView = new cn.fxdata.tv.view.video.VideoControllerView(this);
+        mVideoView.setMediaController(videoControllerView);
+        videoUri = null;
+        if(getIntent().getExtras() == null) {
+            mVideoView.setVideoURI(Uri.parse("http://fx.72zhe.com/static/fx/sample.mp4"));
+            videoUri = "http://fx.72zhe.com/static/fx/sample.mp4";
+        } else if(getIntent().hasExtra(Constants.MovieExtra.EXTRA_MOVIE_PATH)) {
+        	String path = getIntent().getExtras().getString(Constants.MovieExtra.EXTRA_MOVIE_PATH);
+            mVideoView.setVideoURI(Uri.parse(path));
+            videoUri = path;
+        } else if(getIntent().hasExtra(Constants.MovieExtra.EXTRA_MOVIE_ID)){
+        	String movieId = getIntent().getExtras().getString(Constants.MovieExtra.EXTRA_MOVIE_ID);
+        	Log.d(TAG,"forplay video movieID: " + movieId);
+        	VolleyTools tools = VolleyTools.getInstance(this.getContext());
+            tools.addToRequestQueue(new StringRequest(Method.GET, Constants.ServerConfig.MOVIE_DETAIL_URL + "&movie_id=" + movieId, getMovieDetailListener), tools.VolleyTAG);
+        }else {
+            mVideoView.setVideoURI(Uri.parse("http://fx.72zhe.com/static/fx/sample.mp4"));
+            videoUri = "http://fx.72zhe.com/static/fx/sample.mp4";
+            
+            mVideoView.requestFocus();
+            updateShareTVdatabase(videoUri,mVideoView.getCurrentPosition());
+            mVideoView.start();
+        }
+        
+
+
+    }
+    
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
+    	Log.d("renjun1","activity destory 1111");
+    	//unbindService(conn);
+    }
+    
+    private ServiceConnection conn = new ServiceConnection() {
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
+			mBinder = (DownloadManagerService.DownloadBinder) service;
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+			
+		}
+    	
+    };
+
+    private void updateShareTVdatabase(String videoUri,int postion) {
+		// TODO Auto-generated method stub
+    	Cursor mCursor = null;
+    	SQLiteDatabase db = null;
+    	try {
+    		Log.d("renjun1","111111111");
+    		//SQLiteDatabase db = dbHelper.getWritableDatabase();
+    		db = dbHelper.getWritableDatabase();
+    		mCursor = db.query("play_history", new String[] {"_id,_uri"},
+        			"_uri=?",new String[]{videoUri}, null,null,null);
+    		ContentValues values = new ContentValues();
+        	String nowTime = getCurrentTime();
+        	String filename = getNamefromUri(videoUri);
+        	Log.d("renjun1","filename:"+filename);
+        	Log.d("renjun1","videoUri "+videoUri);
+        	Log.d("renjun1","nowTime "+nowTime);
+            values.put("_uri", videoUri);
+            values.put("_time", nowTime);
+            values.put("_pos", postion);
+            values.put("_name", filename);
+        	if (mCursor == null ||mCursor.getCount() == 0) {
+        		Log.d("renjun1","22222222");
+        	    dbHelper.insert(values);
+        	} else {
+        		Log.d("renjun1","3333333333");
+        		dbHelper.update(values,videoUri);
+        	}
+    	}finally {
+    		if (mCursor!= null) {
+    			mCursor.close();
+    		}
+    		if (db!=null) {
+    			db.close();
+    		}
+    	}
+    	
+	}
+
+	private String getNamefromUri(String Uri) {
+		// TODO Auto-generated method stub
+		String mName = Uri.substring(Uri.lastIndexOf("/")+1);
+		Log.d("renjun1","mName: "+mName);
+		return mName.substring(0, mName.lastIndexOf("."));
+	}
+
+	private String getCurrentTime() {
+		// TODO Auto-generated method stub
+		long now = System.currentTimeMillis();
+		Calendar mCalendar = Calendar.getInstance();
+		mCalendar.setTimeInMillis(now);
+		String mData = null;
+		int year = mCalendar.get(Calendar.YEAR);
+		int month = mCalendar.get(Calendar.MONTH)+1;
+		int day = mCalendar.get(Calendar.DATE);
+		if(month <=9) {
+			if (day <=9) {
+				mData = year +""+"0"+month+"0"+day;
+			} else {
+				mData = year +""+"0"+month+day;
+			}
+		} else {
+			mData = year +""+month+""+day;
+		}
+		
+		return mData;
+	}
+
+	private void initView() {
+        
+        mImgFollowMe = (StateImageView)findViewById(R.id.image_notice);
+        mImgFollowMe.setImgStateChangeListener(this);
+        mImgFav = (StateImageView)findViewById(R.id.image_fav);
+        mImgFav.setImgStateChangeListener(this);
+
+        
+        mRadioGroup = (FlowRadioGroup) this.findViewById(R.id.video_detail_radiogroup);
+        mRadioGroup.setOnCheckedChangeListener(radioCheckedChangeListener);
+        mRadioGroup.getRadioButton(0).setChecked(true);
+        bar = (ProgressBar) findViewById(R.id.videoplayerPreloader);
+        video_down_layout = (RelativeLayout) findViewById(R.id.video_down_layoutx);
+        mVideoView = (cn.fxdata.tv.view.video.FullScreenVideoView) findViewById(R.id.video_viewx);
+        mDownloadImage = (ImageView)findViewById(R.id.image_download);
+        mDownloadImage.setOnClickListener(mListener);
+    }
+	
+	private View.OnClickListener mListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			Log.d("renjun1","download 11111111111");
+			//DownloadVideoManager mDmger = new DownloadVideoManager(context);
+			VideoItem vitem = new VideoItem();
+			vitem.setVideoUri(videoUri);
+			Intent intent = new Intent();
+			intent.setClass(context, DownloadManagerService.class);
+			Bundle bud = new Bundle();
+			bud.putSerializable("videoRes", vitem);
+			intent.putExtras(bud);
+			startService(intent);
+			//mBinder.addVideoToDownQuee(vitem);
+			//vitem.setVideoUri(videoUri);
+			//mDmger.setRemotePath(videoUri);
+			//mDmger.addVideoToDownQuee(vitem);
+		}
+	};
+
+    private void initFragments() {
+        fragmentManager = new UIFragmentManager(this, R.id.video_detail_content, getSupportFragmentManager());
+        fragmentManager.put("video_detail_comments", new CommentFragment());
+        fragmentManager.put("video_detail_channel", new EpisodeFragment());
+        fragmentManager.put("video_detail_description", new DetailFragment());
+    }
+
+    /** tab button checked listener */
+    private OnCheckedChangeListener radioCheckedChangeListener = new OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(FlowRadioGroup group, int checkedId) {
+            // TODO Auto-generated method stub
+            switch (checkedId) {
+            case R.id.video_detail_comment:
+                fragmentManager.show("video_detail_comments");
+                fragmentId = 0;
+                break;
+            case R.id.video_detail_channel:
+                fragmentManager.show("video_detail_channel");
+                fragmentId = 1;
+                break;
+            case R.id.video_detail_description:
+                fragmentManager.show("video_detail_description");
+                fragmentId = 2;
+                break;
+            default:
+                break;
+            }
+        }
+    };
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	Log.i("jiangtao4", "activity keydown");
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Configuration config = getResources().getConfiguration();
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            // if the screen orientation is landscape now
+            if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                // set it portait!!!
+            	setScreenOrientation(false, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                return true;
+            } else {
+            	return super.onKeyDown(keyCode, event);
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    private void calculateVideoViewSize() {
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        if (metrics.widthPixels < metrics.heightPixels) {
+            height = (int) (metrics.heightPixels*(3/(8*1.0f)));
+            width = metrics.widthPixels;
+        } else {
+            width = metrics.widthPixels;
+            height = metrics.heightPixels;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        //calculateVideoViewSize();
+        //mVideoView.setDimensions(width, height);
+        //mVideoView.getHolder().setFixedSize(width, height);
+        Log.i(TAG, " == onConfigurationChanged");
+        String screen = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "横屏" : "竖屏";
+        Toast.makeText(this, screen, Toast.LENGTH_LONG).show();
+        bar.refreshDrawableState();
+    }
+    
+    public void setScreenOrientation(boolean isFullScreen, int screenOritation){
+    	DisplayMetrics metrics = getResources().getDisplayMetrics();
+    	if(isFullScreen){
+    		Log.i("jiangtao4", "activity onToggleFullScreen");
+            video_down_layout.setVisibility(View.GONE);
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+            mVideoView.setLayoutParams(layoutParams);
+            width = metrics.widthPixels;
+            height = metrics.heightPixels;
+            mVideoView.setDimensions(height, width);	
+    	}else{
+    		 video_down_layout.setVisibility(View.VISIBLE);
+             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 200);
+             mVideoView.setLayoutParams(layoutParams);
+             //屏幕旋转后，宽高相反
+             height = (int) (metrics.widthPixels*(3/(8*1.0f)));
+             width = metrics.heightPixels;
+             mVideoView.setDimensions(width, height);
+    	}
+    	mVideoView.setIsFullScreen(isFullScreen);
+    	setRequestedOrientation(screenOritation);
+    }
+
+    @Override
+    public void onToggleFullScreen(boolean isFullScreen) {
+    	DisplayMetrics metrics = getResources().getDisplayMetrics();
+    	if(isFullScreen){
+    		setScreenOrientation(isFullScreen, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);	
+    	}else{
+    		setScreenOrientation(isFullScreen, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    	}
+    }
+
+    @Override
+    public void onImageStateChange(boolean isSelected, View view) {
+        // TODO Auto-generated method stub
+        switch (view.getId()) {
+        case R.id.image_notice:
+            if (isSelected) {
+                ToastUtils.ToastAdd(this, "追到手拉，快去来追我列表看看");
+            } else {
+                ToastUtils.ToastRemove(this, "我被甩啦");
+            }
+            break;
+        case R.id.image_fav:
+            if (isSelected) {
+                ToastUtils.ToastAdd(this, "收藏成功");
+            } else {
+                ToastUtils.ToastRemove(this, "取消收藏");
+            }
+            updateFavState(videoUri,isSelected);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+	private void updateFavState(String uri,boolean isSelected) {
+		// TODO Auto-generated method stub
+		Cursor mCursor = null;
+		SQLiteDatabase db = null;
+    	try {
+    		Log.d("renjun1","111111111");
+    		db = dbHelper.getWritableDatabase();
+    		mCursor = db.query("play_history", new String[] {"_id,_uri"},
+        			"_uri=?",new String[]{videoUri}, null,null,null);
+    		ContentValues values = new ContentValues();
+        	
+        	Log.d("renjun1","uri "+uri);
+            values.put("_uri", videoUri);
+            values.put("_fav", isSelected?1:0);
+        	if (mCursor == null ||mCursor.getCount() == 0) {
+        		Log.d("renjun1","22222222");
+        	    dbHelper.insert(values);
+        	} else {
+        		Log.d("renjun1","3333333333");
+        		dbHelper.update(values,uri);
+        	}
+    	}finally {
+    		if (mCursor!= null) {
+    			mCursor.close();
+    		}
+    		if(db != null) {
+    			db.close();
+    		}
+    	}
+	}
+	
+	@Override
+    protected void onPause(){
+		super.onPause();
+		
+	}
+	private Listener<String> getMovieDetailListener = new Listener<String>() {
+        @Override
+        public void onSuccess(String response) {
+            Log.d(TAG, "the response --> " + response);       
+            MovieDetail movie = MJsonUtil.gson.fromJson(response, new TypeToken<MovieDetail>() {}.getType());            
+            if(movie.getError_code() == 0){
+            	videoUri = movie.getDetail().getUrl();
+            	String title = movie.getDetail().getName();
+            	Log.d(TAG,"reponse video url: " + videoUri + " the name -->> " + title);
+            	mVideoView.setVideoURI(Uri.parse(videoUri),title);
+    
+                mVideoView.requestFocus();
+                updateShareTVdatabase(videoUri,mVideoView.getCurrentPosition());
+                mVideoView.start();                
+            }else{
+            	Log.e(TAG, movie.getError_msg());
+            }
+        }
+
+        @Override
+        public void onError(VolleyError error) {
+            super.onError(error);
+            Log.d(TAG, "the response --> " + error.toString());
+            
+            showToast("网络连接错误,无法播放!");
+            
+/*            mVideoView.setVideoURI(Uri.parse("http://fx.72zhe.com/static/fx/sample.mp4"));
+            videoUri = "http://fx.72zhe.com/static/fx/sample.mp4";*/
+            
+//            mVideoView.requestFocus();
+            updateShareTVdatabase(videoUri,mVideoView.getCurrentPosition());
+//            mVideoView.start();
+        }
+
+        @Override
+        public void onCancel() {
+            super.onCancel();
+            Log.d(TAG, "cancelled");
+        }
+	};
+
+}

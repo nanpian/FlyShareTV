@@ -1,0 +1,391 @@
+/* 
+ * Date time function utils class.
+*/
+
+package cn.fxdata.tv.utils;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+/** 
+ * TODO<日期 时间工具类> 
+ */
+
+public class DateTimeUtil {
+
+    /**1分钟以内 返回“刚刚”*/
+    private static final int TIME_SECOND_COUNT = 1;
+    /**5分钟以内*/
+    private static final int TIEM_SECOND_COUNT_MESSAGE = 5;
+    /**1分钟以内*/
+    private static final int TIME_SECOND_MINUTE = 60;
+    /**1小时以内*/
+    private static final int TIME_SECOND_HOUR   =   60*60;
+    /**24小时以内*/
+    private static final int TIME_SECOND_DAY    =   60*60*24;
+    
+    /**
+     * 将日期字符串 转换成Date对象
+     * @param string    日期字符串 2014-06-13
+     * @return  转换成的Date对象
+     */
+    public static Date StringToDate(String string) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            return format.parse(string);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 将日期时间字符串 转换成Date对象
+     * @param string    日期时间字符串 2014-06-13 09:12:55
+     * @return  转换成的Date对象
+     */
+    public static Date StringToDateTime(String string) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            return format.parse(string);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 将Date对象转换成 日期字符串
+     * @param date  需要转换的Date对象
+     * @return  日期字符串
+     */
+    public static String DateToString(Date date) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        return format.format(date);
+    }
+    /**
+     * 格式化日期，如使：2014-3-11  变成 2014-03-11
+     * @param str
+     * @return
+     */
+    public static String FormatDate(String str) {
+        if (str!=null && str.length()==10) {
+            return str;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = format.parse(str);
+            return format.format(date);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 将时间对象 转换成字符串
+     * @param date  需要转换的时间对象
+     * @return  时间字符串
+     */
+    public static String TimeToString1(Date date) {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        return format.format(date);
+    }
+    /**
+     * 格式化时间，如使：9:12:55  变成 09:12:55
+     * @param str
+     * @return
+     */
+    public static String FormatTime(String str) {
+        if (str!=null && str.length()==8) {
+            return str;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        try {
+            Date date = format.parse(str);
+            return format.format(date);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 格式化时间，如使：2014-6-13 9:12:55  变成 2014-06-13 09:12:55
+     * @param str
+     * @return
+     */
+    public static String FormatDateTime(String str) {
+        if (str!=null && str.length()==8) {
+            return str;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date date = format.parse(str);
+            return format.format(date);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 判断选择的日期时间 是否在 现在之前
+     * @param datetime 在此之前，返回true，否则返回false
+     * @return
+     */
+    public static boolean isSelectTimeBeforeNow(String datetime) {
+        if (datetime==null || datetime.equals(""))
+            return true;
+        datetime = FormatDateTime(datetime);
+        Date date = StringToDateTime(datetime);
+        Calendar now = Calendar.getInstance();
+        Calendar select = Calendar.getInstance();
+        select.clear();
+        select.setTime(date);
+        return select.before(now);
+    }
+    /**
+     * 判断 开始时间 是否小于 结束时间 
+     * @param starttime 开始时间
+     * @param endtime   结束时间
+     * @return
+     */
+    public static boolean isStartBeforeEnd(String starttime, String endtime) {
+        if (starttime==null || starttime.equals("") || endtime == null || endtime.equals(""))
+            return true;
+        starttime = FormatDateTime(starttime);
+        endtime = FormatDateTime(endtime);
+        
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        start.clear();
+        end.clear();
+        start.setTime(StringToDateTime(starttime));
+        end.setTime(StringToDateTime(endtime));
+        
+        return start.before(end);
+    }
+    /**
+     * 传入日期字符串，返回与当前日期的年数差和天数差
+     * @param date  如2014-02-17
+     * @return  如：5岁零20天,月份日期相等的话返回"宝宝今天5岁啦"
+     */
+    public static String getIntervalDays (String date) {
+        if (date==null||date.equals("")) {
+            return "";
+        }
+        date = FormatDate(date);
+        Date date2 = StringToDate(date);
+        Calendar now = Calendar.getInstance();
+        Calendar birth = Calendar.getInstance();
+        birth.clear();
+        birth.setTime(date2);
+        //生日 大于当前日期
+        if (now.before(birth)) {
+            return "宝宝还未出生..>-<";
+        }
+        int currentYear = now.get(Calendar.YEAR);
+        int currentMonth = now.get(Calendar.MONTH)+1;
+        int currentDay = now.get(Calendar.DAY_OF_MONTH);
+        int birthYear = birth.get(Calendar.YEAR);
+        int birthMonth = birth.get(Calendar.MONTH)+1;
+        int birthday = birth.get(Calendar.DAY_OF_MONTH);
+        int year = currentYear - birthYear;//相差年数
+        if (currentMonth==birthMonth&&currentDay==birthday) {
+            return "宝宝今天"+year+"岁啦";
+        }else if(currentMonth<birthMonth||(currentMonth==birthMonth&&currentDay<birthday)){//当前的月日小于生日的月日
+            year--;
+            birthYear = currentYear - 1;
+        }else {
+            birthYear = currentYear;
+        }
+        now.clear();
+        now.set(currentYear, currentMonth-1, currentDay);
+        birth.clear();
+        birth.set(birthYear, birthMonth-1, birthday);
+        int days = getDaysBetween(now, birth);
+        return year+"岁"+"零"+days+"天";
+    }
+    /**
+     * 精确计算两个日期之间的天数差
+     * @param d1
+     * @param d2
+     * @return  天数差
+     */
+    private static int getDaysBetween (Calendar d1, Calendar d2) {
+        if (d1.after(d2)) { 
+            java.util.Calendar swap = d1;
+            d1 = d2;
+            d2 = swap;
+        }
+        int days = d2.get(Calendar.DAY_OF_YEAR) - d1.get(Calendar.DAY_OF_YEAR);
+        int y2 = d2.get(Calendar.YEAR);
+        if (d1.get(Calendar.YEAR) != y2) {
+            d1 = (Calendar) d1.clone();
+            do {
+                days += d1.getActualMaximum(Calendar.DAY_OF_YEAR);//得到当年的实际天数
+                d1.add(Calendar.YEAR, 1);
+            } while (d1.get(Calendar.YEAR) != y2);
+        }
+        return days;
+    }
+    
+    /**
+     * 计算传入时间与当前时间的 小时差（一小时以内为分钟差，1分钟以内为"刚刚"）
+     * @param calculateDate 传入的时间格式为：2014-07-31T10:51:01
+     * @return  
+     */
+    public static String getIntervalHours(String calculateDate) {
+        if (calculateDate == null || calculateDate.equals(""))
+            return "";
+        String str = "";
+        try {
+            //calculateDate = calculateDate.replace("T", " ");
+            Date firstDate = StringToDateTime(calculateDate);
+            Date currentDate = Calendar.getInstance().getTime();
+            //秒数差
+            long seconds = (currentDate.getTime()- firstDate.getTime())/1000;
+            
+            if (seconds < 0) {
+                str = "刚刚";
+            }else if(seconds > TIME_SECOND_DAY ) {
+                str = getSimpleDataTimeLong(calculateDate);
+            }else if (seconds > TIME_SECOND_HOUR ) {
+                long hour = seconds/(TIME_SECOND_HOUR);  //相差的小时数
+                str = hour+"小时前";
+            }else if (seconds > TIME_SECOND_MINUTE*TIME_SECOND_COUNT) {
+                long minute = seconds/(TIME_SECOND_MINUTE);
+                str = minute + "分钟前";
+            }else {
+                str = "刚刚";
+            }
+        } catch (NullPointerException e) {
+            // TODO: handle exception
+        }
+        
+        return str;
+    }
+    /**
+     * 计算两个时间 相差分钟数是否大于5分钟
+     * @param start 开始时间
+     * @param end   结束时间
+     * @return  大于5分钟返回true
+     */
+    public static boolean isMessageTimeOver(String start, String end) {
+        //为空 或两者 相等，返回false
+        if (StringUtils.isNullOrEmpty(start) || StringUtils.isNullOrEmpty(end) || start.equals(end)) {
+            return true;
+        }
+        try {
+            //calculateDate = calculateDate.replace("T", " ");
+            Date firstDate = StringToDateTime(start);
+            Date currentDate = StringToDateTime(end);
+            //秒数差
+            long seconds = (currentDate.getTime()- firstDate.getTime())/1000;
+            //Log.e("--", "second==s"+seconds);
+            if (Math.abs(seconds) > TIME_SECOND_MINUTE*TIEM_SECOND_COUNT_MESSAGE) {
+                return true;
+            }
+            
+        } catch (NullPointerException e) {
+            // TODO: handle exception
+        }
+        
+        return false;
+    }
+    /**
+     * 判断日期格式 是否正确
+     * @param str
+     * @return
+     */
+    public static boolean isDateTimevValid(String str){
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try{
+            Date date = (Date)formatter.parse(str);
+            return str.equals(formatter.format(date));
+        }catch(Exception e){
+           return false;
+        }
+    }
+    public static String getSimpleDataTime(String dt) {
+        if (dt == null || dt.equals(""))
+            return "";
+        try {
+            //calculateDate = calculateDate.replace("T", " ");
+            Date firstDate = StringToDateTime(dt);
+            Date currentDate = Calendar.getInstance().getTime();
+            //秒数差
+            long seconds = (currentDate.getTime()- firstDate.getTime())/1000;
+            
+            if (Math.abs(seconds) > TIME_SECOND_DAY) {
+                return getSimpleDataTimeLong(dt);
+            }else {
+                return getSimpleDataTimeShort(dt);
+            }
+        } catch (NullPointerException e) {
+            // TODO: handle exception
+        }
+        
+        return dt;
+    }
+    /**
+     * 将日期 时间 简化
+     * @param dt    如：2014-07-31T10:51:01
+     * @return  07-31 10:51
+     */
+    public static String getSimpleDataTimeLong(String dt) {
+        if ( dt== null || dt.equals(""))
+            return "";
+        try {
+            //dt = dt.replace("T", " ");
+            if (isDateTimevValid(dt)) {
+                dt = dt.substring(5);
+                dt = dt.substring(0, dt.length()-3);
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        return dt;
+    }
+    /**
+     * 将日期 时间 简化
+     * @param dt    如：2014-07-31T10:51:01
+     * @return  10:51
+     */
+    public static String getSimpleDataTimeShort(String dt) {
+        if ( dt== null || dt.equals(""))
+            return "";
+        try {
+            //dt = dt.replace("T", " ");
+            if (isDateTimevValid(dt)) {
+                dt = dt.substring(5);
+                dt = dt.substring(0, dt.length()-3);
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        return dt;
+    }
+    /**
+     * 将时间 简化
+     * @param dt    如：2014-07-31T10:51:01
+     * @return  2014-07-31 10:51
+     */
+    public static String getSimpleTime(String dt) {
+        if ( dt== null || dt.equals(""))
+            return "";
+        try {
+            //dt = dt.replace("T", " ");
+            if (isDateTimevValid(dt)) {
+                dt = dt.substring(0, dt.length()-3);
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        return dt;
+    }
+}

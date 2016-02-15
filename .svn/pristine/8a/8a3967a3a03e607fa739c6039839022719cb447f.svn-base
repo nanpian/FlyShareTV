@@ -1,0 +1,157 @@
+package cn.fxdata.tv.activity;
+
+import java.io.File;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.TextView;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.utils.PortraitManger;
+import cn.fxdata.tv.view.RoundedImageView;
+import cn.fxdata.tv.R;
+
+/**
+ * Created by Jianyong on 15/6/13.
+ */
+public class OwnerMsgEditActivity extends BaseActivity implements
+        OnClickListener {
+    private ImageView ivLeft;
+    private TextView tvTitle;
+    private ImageView ivRight;
+    private TextView name;
+    SharedPreferences sharedPreferences;
+    private String mName;
+    private String mSex;
+    private Switch SexSwitch;
+    private RoundedImageView portrait;
+    private static final int RESULT_LOAD_IMAGE = 0;
+    private PortraitManger pmgr;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_owner_msg_edit);
+        ivLeft = (ImageView) findViewById(R.id.iv_left);
+        ivLeft.setOnClickListener(this);
+        tvTitle = (TextView) findViewById(R.id.title);
+        tvTitle.setText("个人设置");
+        ivRight = (ImageView) findViewById(R.id.iv_right2);
+        ivRight.setVisibility(View.GONE);
+        name = (TextView) findViewById(R.id.name);
+        name.setOnClickListener(this);
+        SexSwitch = (Switch) findViewById(R.id.sex_switch);
+        sharedPreferences = getSharedPreferences("OwnerMsgEditActivity",
+                Context.MODE_PRIVATE);
+        mSex = sharedPreferences.getString("sex", "man");
+        SexSwitch.setOnCheckedChangeListener(mChangelistener);
+        SexSwitch.setClickable(true);
+        SexSwitch.setChecked("man".equals(mSex) ? true : false);
+        mName = sharedPreferences.getString("Username", "Name");
+        name.setText(mName);
+        portrait = (RoundedImageView) findViewById(R.id.avatar);
+        portrait.setOnClickListener(this);
+        pmgr = new PortraitManger(this);
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updatePhotoImage();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+        case R.id.name:
+            ShowEditDialog();
+            break;
+        case R.id.avatar:
+            Photopicker();
+            break;
+        default:
+            break;
+        }
+    }
+
+    private void Photopicker() {
+        // TODO Auto-generated method stub
+        Intent pickintent = new Intent(this, PhotoSelectActivity.class);
+        startActivityForResult(pickintent, RESULT_LOAD_IMAGE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+            Intent intent) {
+        switch (requestCode) {
+
+        case RESULT_LOAD_IMAGE:
+            // 通过照相获取图片
+            if (resultCode == PhotoSelectActivity.SET_PHOTO_OK
+                    && intent != null) {
+                Log.d("renjun1", "activityresult111");
+                Bundle data = intent.getExtras();
+                String path = data.getString("selectedpath");
+                pmgr.setProtraitPhoto(path);
+                updatePhotoImage();
+            }
+            break;
+        default:
+            super.onActivityResult(requestCode, resultCode, intent);
+            break;
+        }
+    }
+
+    private void updatePhotoImage() {
+        // TODO Auto-generated method stub
+        String path = pmgr.getProtraitPhoto();
+        if (!path.isEmpty()) {
+            File imagefile = new File(path);
+            if (imagefile.exists()) {
+                portrait.setImageURI(Uri.parse(path));
+            }
+        }
+    }
+
+    private void ShowEditDialog() {
+        // TODO Auto-generated method stub
+        final EditText edt = new EditText(this);
+        new AlertDialog.Builder(this).setTitle("请输入用户姓名").setView(edt)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Editor editor = sharedPreferences.edit();
+                        editor.putString("Username", edt.getText().toString());
+                        editor.commit();
+                        name.setText(edt.getText().toString());
+                    }
+                }).setNegativeButton("取消", null).show();
+    }
+
+    OnCheckedChangeListener mChangelistener = new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView,
+                boolean isChecked) {
+            // TODO Auto-generated method stub
+            Editor editor = sharedPreferences.edit();
+            editor.putString("sex", SexSwitch.isChecked() ? "man" : "woman");
+            editor.commit();
+        }
+
+    };
+
+}

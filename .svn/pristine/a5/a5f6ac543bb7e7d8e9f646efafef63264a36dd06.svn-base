@@ -1,0 +1,17 @@
+package cn.fxdata.tv.constants;
+
+public class Constants {
+	public static class ServerConfig {
+		public static final String BASE_URL = "http://fx.72zhe.com/api/server.php?";
+		public static final String HOME_URL = "http://fx.72zhe.com/api/server.php?ac=newMovie";
+		public static final String ZHUI_URL = "http://fx.72zhe.com/api/server.php?ac=catchMe";
+		public static final String PREVIEW_URL = "http://fx.72zhe.com/api/server.php?ac=preview";
+		public static final String GET_COLUMNS_URL = "http://fx.72zhe.com/api/server.php?ac=hotspot";
+		public static final String MOVIE_DETAIL_URL = "http://fx.72zhe.com/api/server.php?ac=today";
+		public static final String SCHOOL_LIST_URL = "http://fx.72zhe.com/api/server.php?ac=schoolList";
+		public static final String UPDATE_VERSION_URL = "http://fx.72zhe.com/api/server.php?ac=getVersion";
+		public static final String FOLLOW_ME_URL = "http://fx.72zhe.com/api/server.php?ac=catchList";
+		public static final String DROP_URL = "http://fx.72zhe.com/api/server.php?ac=dropCatch";
+		public static final String HOT_PALY_URL = "http://fx.72zhe.com/api/server.php?ac=hotspot";
+	}
+}

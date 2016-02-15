@@ -1,0 +1,46 @@
+package cn.fxdata.tv.adapter;
+
+import java.util.ArrayList;
+
+import cn.fxdata.tv.bean.VideoItem;
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+
+public class CacheAdapter extends BaseAdapter{
+	public ArrayList<VideoItem> videoItems = new ArrayList<VideoItem>();
+	private Context mContext;
+	public CacheAdapter(Context context) {
+		this.mContext = context;
+	}
+	
+	public void addDownloadItem(VideoItem item){
+		videoItems.add(item);		
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return videoItems.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		// TODO Auto-generated method stub
+		return videoItems.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

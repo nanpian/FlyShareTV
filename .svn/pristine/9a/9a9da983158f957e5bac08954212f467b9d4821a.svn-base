@@ -1,0 +1,83 @@
+package cn.fxdata.tv.activity;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import cn.fxdata.tv.R;
+
+public class UserActivity extends Activity implements OnClickListener {
+	private TextView t, tvTitle;
+	private ImageView topright, back;
+	private FrameLayout f;
+	private RelativeLayout lxhc, setting;
+
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.act_user);
+		initview();
+	}
+
+	private void initview() {
+		back = (ImageView) findViewById(R.id.iv_left);
+		back.setOnClickListener(this);
+		// 标题名称
+		tvTitle = (TextView) findViewById(R.id.title);
+		tvTitle.setText("用户中心");
+		// 右上角 隐藏
+		topright = (ImageView) findViewById(R.id.iv_right2);
+		topright.setVisibility(topright.GONE);
+		// 下面FrameLayout 背景色 改成与 大LinearLayout一致
+		f = (FrameLayout) findViewById(R.id.content);
+		f.setBackgroundColor(0xe4e4e4);
+		lxhc = (RelativeLayout) findViewById(R.id.lxhc);
+		t = (TextView) findViewById(R.id.userName);
+		setting = (RelativeLayout) findViewById(R.id.setting);
+		setting.setOnClickListener(this);
+		t.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(UserActivity.this,
+						LoginActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		/*
+		 * lxhc.setOnTouchListener(new OnTouchListener() {
+		 * 
+		 * @Override public boolean onTouch(View v, MotionEvent event) { if
+		 * (event.getAction() == MotionEvent.ACTION_DOWN) { // 更改为按下时的背景色
+		 * v.setBackgroundColor(0xe4e4e4); } else if (event.getAction() ==
+		 * MotionEvent.ACTION_UP) { // 改为抬起时的背景色 v.setBackgroundColor(0xffffff);
+		 * } return true; }
+		 * 
+		 * });
+		 */
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.iv_left:
+			finish();
+			break;
+		case R.id.setting:
+			startActivity(new Intent(UserActivity.this,
+					UserSettingActivity.class));
+			break;
+		default:
+			break;
+		}
+	}
+}

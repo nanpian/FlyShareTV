@@ -1,0 +1,58 @@
+package cn.fxdata.tv.bean;
+
+import java.io.Serializable;
+
+public class VideoItem implements Serializable{
+	private String videoUri;
+	private String fileName;
+	private boolean isfav;
+	private int videopostion;
+	private String lastTime;
+	private int mLength;
+	
+	public String getVideoUri() {
+		return videoUri;
+	}
+	
+	public void setVideoUri(String uri) {
+		this.videoUri = uri;
+	}
+	
+	public String getfileName() {
+		return fileName;
+	}
+	
+	public void setfileName(String name) {
+		this.fileName = name;
+	}
+	public boolean isFavVideo() {
+		return isfav;
+	}
+	
+	public void setFavVideo(boolean state) {
+		this.isfav = state;
+	}
+	public int getVideoPostion() {
+		return videopostion;
+	}
+	
+	public void setVideoPostion(int postion) {
+		this.videopostion = postion;
+	}
+	
+	public String getVideoLast() {
+		return lastTime;
+	}
+	
+	public void setVideoLast(String time){
+		this.lastTime = time;
+	}
+	
+	public void setVideolength(int len){
+		this.mLength = len;
+	}
+	public int getVideolength(){
+		return mLength;
+	}
+
+}

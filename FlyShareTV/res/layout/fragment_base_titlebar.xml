@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_titlebar_root_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/fragment_titlebar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/homepage_top_bar_height"
+        android:paddingLeft="@dimen/margin_micro"
+        android:paddingRight="@dimen/margin_micro" >
+    </RelativeLayout>
+
+    <FrameLayout
+        android:id="@+id/fragment_titlebar_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/fragment_titlebar" >
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/base_container_alpha"
+        android:layout_width="match_parent"
+        android:layout_height="50.2dp"
+        android:background="#b0000000"
+        android:visibility="gone" />
+
+</RelativeLayout>

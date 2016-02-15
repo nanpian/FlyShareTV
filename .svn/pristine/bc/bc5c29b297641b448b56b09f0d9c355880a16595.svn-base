@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="tag_movie_id"></item>
+    <item type="id" name="tag_hotplay_school_id"></item>
+    <item type="id" name="tag_hotplay_school_name"></item>
+</resources>

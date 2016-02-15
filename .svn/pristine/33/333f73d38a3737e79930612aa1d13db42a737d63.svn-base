@@ -1,0 +1,98 @@
+package cn.fxdata.tv.bean.hotplaybroadcast;
+
+import java.util.ArrayList;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+public class Broadcast {
+
+    @SerializedName("class")
+    @Expose
+    private String _class;
+    @SerializedName("class_id")
+    @Expose
+    private String classId;
+    @SerializedName("list")
+    @Expose
+    private java.util.List<cn.fxdata.tv.bean.hotplaybroadcast.List> list = new ArrayList<cn.fxdata.tv.bean.hotplaybroadcast.List>();
+
+    /**
+     * 
+     * @return The _class
+     */
+    public String getClass_() {
+        return _class;
+    }
+
+    /**
+     * 
+     * @param _class
+     *            The class
+     */
+    public void setClass_(String _class) {
+        this._class = _class;
+    }
+
+    /**
+     * 
+     * @return The classId
+     */
+    public String getClassId() {
+        return classId;
+    }
+
+    /**
+     * 
+     * @param classId
+     *            The class_id
+     */
+    public void setClassId(String classId) {
+        this.classId = classId;
+    }
+
+    /**
+     * 
+     * @return The list
+     */
+    public java.util.List<cn.fxdata.tv.bean.hotplaybroadcast.List> getList() {
+        return list;
+    }
+
+    /**
+     * 
+     * @param list
+     *            The list
+     */
+    public void setList(
+            java.util.List<cn.fxdata.tv.bean.hotplaybroadcast.List> list) {
+        this.list = list;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(_class).append(classId)
+                .append(list).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if ((other instanceof Broadcast) == false) {
+            return false;
+        }
+        Broadcast rhs = ((Broadcast) other);
+        return new EqualsBuilder().append(_class, rhs._class)
+                .append(classId, rhs.classId).append(list, rhs.list).isEquals();
+    }
+
+}

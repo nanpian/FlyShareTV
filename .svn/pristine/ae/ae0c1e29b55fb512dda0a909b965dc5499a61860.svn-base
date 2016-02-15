@@ -1,0 +1,52 @@
+package cn.fxdata.tv.bean;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.fxdata.tv.bean.school.Datum;
+
+/**
+ * Created by Jianyong on 15/6/29.
+ */
+public class Follow {
+
+    @SerializedName("error_code")
+    @Expose
+    private Integer errorCode;
+    @SerializedName("error_msg")
+    @Expose
+    private String errorMsg;
+    @SerializedName("data")
+    @Expose
+    private List<FollowEntity> data = new ArrayList<FollowEntity>();
+
+    public Integer getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(Integer errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
+    public List<FollowEntity> getData() {
+        return data;
+    }
+
+    public void setData(List<FollowEntity> data) {
+        this.data = data;
+    }
+
+}

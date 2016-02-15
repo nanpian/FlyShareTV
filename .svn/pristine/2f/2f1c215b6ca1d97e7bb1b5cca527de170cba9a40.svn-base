@@ -1,0 +1,115 @@
+package cn.fxdata.tv.db;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+public class FavDbUtil {
+
+    private static FavDbUtil mInstance;
+    private Context mContext;
+    private FlyShareTVdataHelper mSQLHelp;
+    private SQLiteDatabase mSQLiteDatabase;
+
+    private FavDbUtil(Context context) {
+        try {
+            mContext = context;
+            mSQLHelp = new FlyShareTVdataHelper(context);
+            mSQLiteDatabase = mSQLHelp.getWritableDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 初始化数据库操作Util单例类
+     */
+    public static FavDbUtil getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new FavDbUtil(context);
+        }
+        return mInstance;
+    }
+
+    /**
+     * 关闭数据库
+     */
+    public void close() {
+        mSQLHelp.close();
+        mSQLHelp = null;
+        mSQLiteDatabase.close();
+        mSQLiteDatabase = null;
+        mInstance = null;
+    }
+
+    /**
+     * 向收藏视频数据库添加内容
+     */
+    public void addUpdateFavVideo(String movieid, String moviename, String movieTime, String moviePraiseTimes) {
+
+        Cursor c = null;
+        ContentValues values = new ContentValues();
+        values.put(FlyShareTVdataHelper.MOVIE_ID, movieid);
+        values.put(FlyShareTVdataHelper.MOVIE_NAME, moviename);
+        values.put(FlyShareTVdataHelper.MOVIE_TIME, movieTime);
+        values.put(FlyShareTVdataHelper.MOVIE_PRAISE_TIMES, moviePraiseTimes);
+        try {
+            String selection = FlyShareTVdataHelper.MOVIE_ID + "=?";
+            String[] selectionArgs = new String[] { movieid };
+            c = mSQLiteDatabase.query(FlyShareTVdataHelper.SQL_FAVORATE, null, selection, selectionArgs, null, null, null);
+            if (c != null && c.getCount() > 0) {
+                mSQLiteDatabase.update(FlyShareTVdataHelper.SQL_FAVORATE, values, selection, selectionArgs);
+            } else {
+                mSQLiteDatabase.insert(FlyShareTVdataHelper.SQL_FAVORATE, null, values);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null && !c.isClosed()) {
+                c.close();
+            }
+        }
+        mSQLiteDatabase.close();
+    }
+
+    /**
+     * 判断是否是收藏的视频
+     * 
+     * @param movieId
+     * @return
+     */
+    public boolean isFavVideo(String movieId) {
+        try {
+            Cursor c = null;
+            String selection = FlyShareTVdataHelper.MOVIE_ID + "=?";
+            String[] selectionArgs = new String[] { movieId };
+            c = mSQLiteDatabase.query(FlyShareTVdataHelper.SQL_FAVORATE, null, selection, selectionArgs, null, null, null);
+            if (c != null && c.getCount() > 0) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 删除movie id对应的收藏视频数据
+     */
+    public void removeFavVideo(String movieid) {
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(FlyShareTVdataHelper.MOVIE_ID, movieid);
+            String whereArgs = FlyShareTVdataHelper.MOVIE_ID + " =?";
+            String[] whereValue = { movieid + "" };
+            mSQLiteDatabase.delete(FlyShareTVdataHelper.SQL_FAVORATE, whereArgs, whereValue);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            this.close();
+        }
+    }
+
+}

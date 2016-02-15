@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <ScrollView
+        android:id="@+id/frag_hotplay_main_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <include layout="@layout/layout_top_bar" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <cn.fxdata.tv.view.HomeSlideShow
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp" />
+            </RelativeLayout>
+
+            <include
+                android:id="@+id/hotplay_variety"
+                layout="@layout/view_hotplay_common_hot_item" />
+
+            <include
+                android:id="@+id/hotplay_drama"
+                layout="@layout/view_hotplay_common_hot_item" />
+
+            <include
+                android:id="@+id/hotplay_movie"
+                layout="@layout/view_hotplay_common_hot_item" />
+
+            <include
+                android:id="@+id/hotplay_anime"
+                layout="@layout/view_hotplay_common_hot_item" />
+        </LinearLayout>
+    </ScrollView>
+
+    <cn.fxdata.tv.view.widget.FXProgressBar
+        android:id="@+id/frag_hotplay_progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" >
+    </cn.fxdata.tv.view.widget.FXProgressBar>
+
+    <ImageView
+        android:id="@+id/connect_error"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/connect_error"
+        android:visibility="gone" />
+
+</RelativeLayout>

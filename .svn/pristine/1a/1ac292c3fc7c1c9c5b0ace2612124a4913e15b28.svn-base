@@ -1,0 +1,132 @@
+package cn.fxdata.tv.cache;
+
+import com.android.volley.toolbox.BaseImageLoader.ImageCache;
+
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.util.Log;
+
+public class BitmapCache implements ImageCache {
+
+    /**
+     * 单例模式
+     */
+    private static class ImageCacheHolder {
+        static final BitmapCache BITMAP_CACHE = new BitmapCache();
+    }
+
+    /**
+     * 对外获取BitmapCache对象的接口
+     * 
+     * @return BitmapCache对象
+     */
+    public static BitmapCache getBitmapCache() {
+        return ImageCacheHolder.BITMAP_CACHE;
+    }
+
+    private BitmapCache() {
+        imageFileCache = ImageFileCache.getImageFileCache();
+        imageMemoryCache = ImageMemoryCache.getInstance();
+    }
+
+    private ImageMemoryCache imageMemoryCache;
+    private ImageFileCache imageFileCache;
+
+    @Override
+    public Bitmap getBitmap(String url) {
+        // TODO Auto-generated method stub
+        Bitmap bitmap = imageMemoryCache.getBitmapFromCache(url);
+        if (bitmap == null) {
+            bitmap = imageFileCache.getBitmapFromCache(url);
+            if (bitmap != null) {
+                imageMemoryCache.addBitmapToCache(url, bitmap);
+                return bitmap;
+            }
+        } else {
+            // Log.e("====", "get bitmap from cache");
+        }
+        return bitmap;
+    }
+
+    public Bitmap getBitmap(String url, int width, int height) {
+        // TODO Auto-generated method stub
+        Bitmap bitmap = imageMemoryCache.getBitmapFromCache(url);
+        if (bitmap == null) {
+            if (width > 0 && height > 0) {
+                bitmap = imageFileCache.getBitmapFromCache(url, width, height);
+            } else {
+                bitmap = imageFileCache.getBitmapFromCache(url);
+            }
+            if (bitmap != null) {
+                // Log.e("bitmap", "get bitmap from disk");
+                // Log.e("------", "w="+width+"  h"+height);
+                if (width > 0 && height > 0) {
+                    Log.e("bitmap", "add bitmap to cache");
+                    imageMemoryCache.addBitmapToCache(url,
+                            getBitmap(bitmap, width, height));
+                }
+                return bitmap;
+            }
+        } else {
+            // Log.e("====", "get bitmap from cache");
+        }
+        // else {
+        // int w = bitmap.getWidth();
+        // int h = bitmap.getHeight();
+        // Log.e("cache", "get bitmap w="+w +" h="+h);
+        // }
+        return bitmap;
+    }
+
+    @Override
+    public void putBitmap(String url, Bitmap bitmap) {
+        // TODO Auto-generated method stub
+        imageMemoryCache.addBitmapToCache(url, bitmap);
+        imageFileCache.saveBitmap(bitmap, url);
+    }
+
+    public Bitmap getBitmapOnlyMemory(String url) {
+        // TODO Auto-generated method stub
+        return imageMemoryCache.getBitmapFromCache(url);
+    }
+
+    public void putBitmap(String url, Bitmap bitmap, int width, int height) {
+        // TODO Auto-generated method stub
+        // putBitmap(url, bitmap);
+        if (bitmap != null && width > 0 && height > 0
+                && bitmap.getWidth() != width / 2) {
+            imageMemoryCache.addBitmapToCache(url,
+                    getBitmap(bitmap, width, height));
+            imageFileCache.saveBitmap(bitmap, url);
+        } else {
+            imageMemoryCache.addBitmapToCache(url, bitmap);
+            imageFileCache.saveBitmap(bitmap, url);
+        }
+    }
+
+    /**
+     * 缩放图片到指定的宽高，其中宽为屏幕的1/2，高度自适应
+     * 
+     * @param bitmap
+     * @param width
+     * @param height
+     * @return
+     */
+    private Bitmap getBitmap(Bitmap bitmap, int width, int height) {
+
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
+        // Log.e("cache", "old w="+w +" h="+h);
+        // Log.e("cache", "dispaly width="+ width);
+        Matrix matrix = new Matrix();
+        float scaleWidth = ((float) width / 2 / w);
+        float scaleHeight = ((float) height / 2 / h);
+        // Log.e("bitmap", "sw="+scaleWidth + "   sh="+scaleHeight);
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap newBitmap = Bitmap
+                .createBitmap(bitmap, 0, 0, w, h, matrix, true);
+        // Log.e("cache", "new w="+newBitmap.getWidth()
+        // +" h="+newBitmap.getHeight());
+        return newBitmap;
+    }
+}

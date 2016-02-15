@@ -1,0 +1,70 @@
+package entity;
+
+import com.zgntech.core.entity.BaseReturn;
+
+/**
+ * 
+ * @description：TODO<单一操作返回数据，如删除，添加，设置等,只返回结果码，1表示成功>
+ * @author：lyu
+ * @date:2015-5-21
+ * @version：V1.0
+ */
+public class ActionReturn extends BaseReturn {
+
+    private ActionResult data;
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "ActionReturn [data=" + data + ", error_code=" + error_code
+                + ", error_msg=" + error_msg + "]";
+    }
+
+    /**
+     * @return the data
+     */
+    public ActionResult getData() {
+        return data;
+    }
+
+    /**
+     * @param data
+     *            the data to set
+     */
+    public void setData(ActionResult data) {
+        this.data = data;
+    }
+
+    public class ActionResult {
+        private String result;
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "ActionResult [result=" + result + "]";
+        }
+
+        /**
+         * @return the result
+         */
+        public String getResult() {
+            return result;
+        }
+
+        /**
+         * @param result
+         *            the result to set
+         */
+        public void setResult(String result) {
+            this.result = result;
+        }
+    }
+}

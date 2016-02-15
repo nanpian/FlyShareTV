@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="#CC000000"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="4dip"
+        android:visibility="gone" >
+
+        <ImageButton
+            android:id="@+id/prev"
+            style="@android:style/MediaButton.Previous"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/rew"
+            style="@android:style/MediaButton.Rew"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/ffwd"
+            style="@android:style/MediaButton.Ffwd"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/next"
+            style="@android:style/MediaButton.Next"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/pause"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:background="#00000000"
+            android:paddingLeft="4dip"
+            android:paddingRight="4dip"
+            android:src="@drawable/play" />
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:orientation="horizontal" >
+
+            <SeekBar
+                android:id="@+id/mediacontroller_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:maxHeight="2dp"
+                android:minHeight="2dp"
+                android:layout_marginTop="5dp"
+                android:progressDrawable="@drawable/seekbar_style"
+                android:thumb="@drawable/thumb_bar"
+                android:thumbOffset="2dip" >
+            </SeekBar>
+
+            <TextView
+                android:id="@+id/time_current"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/mediacontroller_progress"
+                android:layout_below="@id/mediacontroller_progress"
+                android:textSize="14sp"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignRight="@id/mediacontroller_progress"
+                android:layout_below="@id/mediacontroller_progress"
+                android:layout_gravity="center_horizontal"
+                android:textSize="14sp"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <ImageButton
+            android:id="@+id/fullscreen"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="5dp"
+            android:background="@android:color/transparent"
+            android:paddingLeft="4dip"
+            android:paddingRight="4dip"
+            android:paddingTop="4dip"
+            android:src="@drawable/fullscreen" />
+    </LinearLayout>
+
+</LinearLayout>

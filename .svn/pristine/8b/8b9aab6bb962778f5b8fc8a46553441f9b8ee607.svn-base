@@ -1,0 +1,95 @@
+
+package cn.fxdata.tv.activity;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import cn.fxdata.tv.R;
+import cn.fxdata.tv.base.BaseActivity;
+import cn.fxdata.tv.bean.VersionReturn;
+import cn.fxdata.tv.fragment.FollowMeFragment;
+import cn.fxdata.tv.fragment.HotPlayFragment;
+import cn.fxdata.tv.fragment.LatestVedioFragment;
+import cn.fxdata.tv.utils.LoginUserInfo;
+import cn.fxdata.tv.utils.RadioViewGroup;
+import cn.fxdata.tv.utils.SharedPreferencePersonUtil;
+
+import com.zgntech.core.manager.UIFragmentManager;
+import com.zgntech.core.util.SystemTool;
+
+/**
+ * @description：TODO<请描述这个类是干什么的>
+ * @author：lyu
+ * @date:2015-5-30
+ * @version：V1.0
+ */
+public class MainFragmentActivity extends BaseActivity implements
+        OnClickListener {
+
+    private FrameLayout contentView;
+    private UIFragmentManager fragmentManager;
+    private RadioViewGroup rvg;
+
+    private Button latestBtn, hotPlayBtn, followmeBtn;
+    private boolean isPerson;
+
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.act_main_fragment);
+        initView();
+        initFragment();
+    }
+
+    /**
+     * 初始化view
+     */
+    @SuppressLint("NewApi")
+    private void initView() {
+        contentView = (FrameLayout) findViewById(R.id.content);
+        latestBtn = (Button) findViewById(R.id.btn_latest);
+        hotPlayBtn = (Button) findViewById(R.id.btn_hotplay);
+        followmeBtn = (Button) findViewById(R.id.btn_followme);
+        latestBtn.setOnClickListener(this);
+        hotPlayBtn.setOnClickListener(this);
+        followmeBtn.setOnClickListener(this);
+    }
+
+    /**
+     * 初始化fragment
+     */
+    private void initFragment() {
+        fragmentManager = new UIFragmentManager(this, R.id.fl_content, getSupportFragmentManager());
+        fragmentManager.put("lastest", new LatestVedioFragment());
+        fragmentManager.put("hotplay", new HotPlayFragment());
+        fragmentManager.put("followme", new FollowMeFragment());
+        fragmentManager.show("lastest");
+        rvg = new RadioViewGroup(this, false);
+        rvg.selected(latestBtn);
+    }
+    
+    
+   
+    
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_latest:
+                fragmentManager.show("lastest");
+                break;
+            case R.id.btn_hotplay:
+                fragmentManager.show("hotplay");
+                break;
+            case R.id.btn_followme:
+                fragmentManager.show("followme");
+                break;
+            default:
+                break;
+        }
+        rvg.selected(v);
+    }
+}

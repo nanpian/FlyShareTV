@@ -1,0 +1,70 @@
+package cn.fxdata.tv.fragment.detail;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.zgntech.core.util.UiTools;
+
+import cn.fxdata.tv.adapter.CommentAdapter;
+import cn.fxdata.tv.adapter.EpisodeListAdapter;
+import cn.fxdata.tv.base.BaseFragment;
+import cn.fxdata.tv.R;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+
+/**
+ * Video detail episode fragment in video detail activity.
+ */
+public class EpisodeFragment extends BaseFragment {
+
+    private EpisodeListAdapter adapter;
+    private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+    private ListView commentListView;
+    private GridView episodeGridView;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.frag_episode_comment, container, false);
+        commentListView = (ListView) view.findViewById(R.id.video_detail_comment_listview);
+        episodeGridView = (GridView) view.findViewById(R.id.episode_gridview);
+        adapter = new EpisodeListAdapter(this.getActivity(), data);
+        commentListView.setAdapter(adapter);
+        UiTools.setListViewHeightBasedOnChildren(commentListView);
+
+        ArrayList<HashMap<String, String>> lstImageItem = new ArrayList<HashMap<String, String>>();
+        for (int i = 0; i < 10; i++) {
+            HashMap<String, String> map = new HashMap<String, String>();
+            map.put("ItemText", String.valueOf(i));// 按序号做ItemText
+            lstImageItem.add(map);
+        }
+        SimpleAdapter gridAdapter = new SimpleAdapter(this.getActivity(), lstImageItem, R.layout.row_grid_episode_item, new String[] { "ItemText" }, new int[] { R.id.episode_grid_textview });
+
+        // 添加并且显示
+        episodeGridView.setAdapter(gridAdapter);
+        // 添加消息处理
+        episodeGridView.setOnItemClickListener((OnItemClickListener) new ItemClickListener());
+        return view;
+    }
+
+    class ItemClickListener implements OnItemClickListener {
+        public void onItemClick(AdapterView<?> arg0,// The AdapterView where the
+                                                    // click happened
+                View arg1,// The view within the AdapterView that was clicked
+                int arg2,// The position of the view in the adapter
+                long arg3// The row id of the item that was clicked
+        ) {
+            // 在本例中arg2=arg3
+            HashMap<String, Object> item = (HashMap<String, Object>) arg0.getItemAtPosition(arg2);
+
+        }
+    }
+}
